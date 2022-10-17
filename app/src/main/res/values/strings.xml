@@ -1,0 +1,154 @@
+<resources>
+    <string name="placeholder" translatable="false">Placeholder</string>
+
+    <string name="app_name">Filà Magenta</string>
+    <string name="account_type_name">Filà Magenta</string>
+    <string name="title_account">Account</string>
+
+    <string name="credits_made_by">Made by Arnau Mora</string>
+    <string name="credits_libraries">Used libraries</string>
+
+    <string name="image_desc_account">Account</string>
+    <string name="image_desc_close">Close</string>
+    <string name="image_desc_sign_out">Sign Out</string>
+    <string name="image_desc_profile_image">Profile Image</string>
+    <string name="image_desc_add_to_calendar">Add to Calendar</string>
+    <string name="image_desc_add_to_menu">Add to the Menu</string>
+    <string name="image_desc_go_back">Go Back</string>
+    <string name="image_desc_add_event">Add Event</string>
+    <string name="image_desc_remove">Remove</string>
+    <string name="image_desc_help">Help</string>
+
+    <string name="nav_accounting">Accounting</string>
+    <string name="nav_information">Info</string>
+    <string name="nav_events">Events</string>
+    <string name="nav_settings">Settings</string>
+
+    <string name="dialog_action_close">Close</string>
+    <string name="dialog_action_ok">OK</string>
+
+    <string name="badge_you">You</string>
+
+    <string name="error_title">Could not start app</string>
+    <string name="error_internet">The server could not be reached. Please, check your Internet connection, and try again later.</string>
+    <string name="error_unknown">An unknown error has occurred. Please, try again later, or contact an administrator.</string>
+
+    <string name="login_username">Username</string>
+    <string name="login_password">Password</string>
+    <string name="login_action">Login</string>
+    <string name="login_action_show_password">Show Password</string>
+    <string name="login_action_hide_password">Hide Password</string>
+
+    <string name="login_error_empty_username">Username cannot be empty</string>
+    <string name="login_error_empty_password">Password cannot be empty</string>
+    <string name="login_error_invalid_password">Check your DNI. Remember that you must include the letter.</string>
+
+    <string name="close_session_confirm_dialog_title">Close session</string>
+    <string name="close_session_confirm_dialog_message">Are you sure that you want to sign out?</string>
+    <string name="close_session_confirm_dialog_action">Sign out</string>
+
+    <string name="choose_table_dialog_title">Choose a table</string>
+    <string name="choose_table_dialog_message">Select a table from the following, or create a new one. If you choose to create a new one, you will become the responsible of the table.</string>
+    <string name="choose_table_dialog_new_title">Create new table</string>
+    <string name="choose_table_dialog_new_subtitle">You will become the responsible.</string>
+    <string name="choose_table_dialog_creating">Creating table…</string>
+    <string name="choose_table_dialog_adding">Adding you to the table…</string>
+
+    <string name="confirm_assistance_dialog_title">Confirm Assistance</string>
+    <string name="confirm_assistance_dialog_message">Are you sure that you want to confirm your assistance to %s?</string>
+    <string name="confirm_assistance_dialog_action">Confirm</string>
+
+    <string name="toast_error_unknown">Unknown error</string>
+    <string name="toast_login_wrong_credentials">Wrong username or password</string>
+    <string name="toast_no_internet">No Internet connection</string>
+
+    <string name="account_personal_data">Personal data</string>
+    <string name="account_personal_data_address">Address</string>
+    <string name="account_personal_data_dni">DNI</string>
+    <string name="account_personal_data_born">Date of Birth</string>
+    <string name="account_personal_data_sign_up_date">Registration Date</string>
+    <string name="account_personal_data_phone">Phone</string>
+    <string name="account_personal_data_mobile_phone">Mobile Phone</string>
+    <string name="account_personal_data_work_phone">Work Phone</string>
+    <string name="account_personal_data_email">Email</string>
+    <string name="account_personal_data_payment_method">Payment Method</string>
+
+    <string name="account_wheel_white">Whites Wheel Number</string>
+    <string name="account_wheel_black">Blacks Wheel Number</string>
+    <string name="account_antiquity">Antiquity</string>
+
+    <string name="account_trebuchet">Trebuchet</string>
+    <string name="account_trebuchet_date">Date Obtained</string>
+    <string name="account_trebuchet_expiration">Expires</string>
+
+    <string name="event_trebuchet_expiration_title">Trebuchet permission expiration</string>
+    <string name="event_trebuchet_expiration_summary">Remember to renew the trebuchet shooting permission</string>
+
+    <string name="settings_category_general">General</string>
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_summary">Change the display language of the app</string>
+    <string name="settings_language_dialog_title">Language</string>
+
+    <string name="event_confirm_action">Confirm Assistance</string>
+    <string name="event_confirmed">Assistance Confirmed</string>
+    <string name="event_unconfirmed">Assistance Unconfirmed</string>
+    <string name="event_table_view">View Table</string>
+    <string name="event_view">View Event</string>
+    <string name="event_menu">Menu</string>
+    <string name="event_menu_coffee">Coffee</string>
+    <string name="event_menu_drink">Drink</string>
+    <string name="event_table">Your Table</string>
+    <string name="event_description">Description</string>
+    <string name="event_contact">Contact</string>
+    <string name="event_date">Event Date</string>
+    <string name="event_price_unknown">Unknown</string>
+    <string name="event_price_included">Included</string>
+    <string name="event_table_responsible">Table Responsible</string>
+
+    <string name="toast_event_coffee_included">Coffee is included in the menu</string>
+    <string name="toast_event_drink_included">Drinks are included in the menu</string>
+    <string name="toast_error_account_null">There has been an error with your account. The action could not be perfomed.</string>
+
+    <string name="prices_dialog_title">Prices table</string>
+
+    <string name="event_new_title">Create new Event</string>
+    <string name="event_new_section_parameters">Parameters</string>
+    <string name="event_new_section_menu">Menu</string>
+    <string name="event_new_section_menu_starters">Starters</string>
+    <string name="event_new_section_menu_firsts">Firsts</string>
+    <string name="event_new_section_menu_seconds">Seconds</string>
+    <string name="event_new_section_menu_dessert">Dessert</string>
+    <string name="event_new_menu_plate_name">Plate Name</string>
+    <string name="event_new_menu_drink_included">Drinks included</string>
+    <string name="event_new_menu_coffee_included">Coffee included</string>
+    <string name="event_new_description">The event you create will be shown to everybody as soon as you click create. Please, be careful and introduce all the information correctly.</string>
+    <string name="event_new_name">Event Name</string>
+    <string name="event_new_name_description">This is a descriptive name for the event. If it\'s a recurring event, such as "Mig Any", we recommend adding the year at the end ("Mig Any 2022").</string>
+    <string name="event_new_date">Event Date</string>
+    <string name="event_new_type">Event Type</string>
+
+    <string name="fester_type_alevin">Fry</string>
+    <string name="fester_type_infantil">Children</string>
+    <string name="fester_type_juvenil">Youth</string>
+    <string name="fester_type_sit_esp">Special Situation</string>
+    <string name="fester_type_fester">Fester</string>
+    <string name="fester_type_jubilat">Retired</string>
+    <string name="fester_type_colaborador">Contributor</string>
+    <string name="fester_type_baixa">Unsubscribed</string>
+    <string name="fester_type_sit_esp_estudis">Special Situation for Studies</string>
+    <string name="fester_type_colaborador_pack">Contributor with Pack</string>
+    <string name="fester_type_jubilat_pack">Retired with Pack</string>
+    <string name="fester_type_unknown">Unknown</string>
+    <string name="fester_type_external">External</string>
+
+    <string name="payment_method_transferencia">Transfer</string>
+    <string name="payment_method_remesa">Batch</string>
+    <string name="payment_method_caja">Cash</string>
+    <string name="payment_method_tpv">TPV</string>
+    <string name="payment_method_tpv_web">Web TPV</string>
+    <string name="payment_method_unknown">Unknown</string>
+
+    <string name="event_type_generic">Generic</string>
+    <string name="event_type_eat">Eat</string>
+    <string name="event_type_entradeta">Entradeta</string>
+</resources>

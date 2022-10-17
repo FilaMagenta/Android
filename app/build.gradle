@@ -1,0 +1,201 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.mikepenz.aboutlibraries.plugin'
+    id 'com.google.devtools.ksp'
+    id 'io.gitlab.arturbosch.detekt'
+}
+
+android {
+    namespace 'com.arnyminerz.filamagenta'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.arnyminerz.filamagenta"
+        minSdk 21
+        targetSdk 33
+        versionCode 1
+        versionName "1.0.0-alpha01"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
+
+        // Required when setting minSdkVersion to 20 or lower
+        multiDexEnabled true
+
+        buildConfigField "String", "ACCOUNT_TYPE", '"fila_magenta"'
+        resValue "string", "ACCOUNT_TYPE", "fila_magenta"
+
+        def locales = getLocales()
+        buildConfigField "String[]", "TRANSLATION_ARRAY", "new String[]{\"" + locales.join("\",\"") + "\"}"
+        resConfigs locales
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+
+        coreLibraryDesugaringEnabled true
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.3.2'
+    }
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+    sourceSets {
+        main {
+            res.srcDirs += ['build/generated/res/locale']
+        }
+    }
+}
+
+import static groovy.io.FileType.DIRECTORIES
+import groovy.xml.MarkupBuilder
+
+/**
+ * Obtains a list of all the available locales
+ * @since 20220928
+ * @return A list with the language codes of the locales available.
+ */
+def getLocales() {
+    // Initialize the list English, since it's available by default
+    def list = ["en"]
+    // Get all directories inside resources
+    def dir = new File(projectDir, "src/main/res")
+    dir.traverse(type: DIRECTORIES, maxDepth: 0) { file ->
+        // Get only values directories
+        def fileName = file.name
+        if (!fileName.startsWith("values-")) return
+
+        // Take only the values directories that contain strings
+        def stringsFile = new File(file, "strings.xml")
+        if (!stringsFile.exists()) return
+
+        // Add to the list the locale of the strings file
+        list.add(fileName.substring(fileName.indexOf('-') + 1))
+    }
+    // Log the available locales
+    println "Supported locales: " + list.join(", ")
+    // Return the built list
+    return list
+}
+
+task updateLocalesConfig() {
+    println 'Building locale config...'
+    ext.outputDir = new File(projectDir, 'build/generated/res/locale/xml')
+
+    doFirst {
+        mkdir outputDir
+
+        new File(outputDir, "locales_config.xml").withWriter { writer ->
+            def destXml = new MarkupBuilder(new IndentPrinter(writer, "    ", true, true))
+            destXml.setDoubleQuotes(true)
+            def destXmlMkp = destXml.getMkp()
+            destXmlMkp.xmlDeclaration(version: "1.0", encoding: "utf-8")
+            destXmlMkp.comment("Generated at ${new Date()}")
+            destXmlMkp.yield "\r\n"
+
+            def locales = getLocales()
+            destXml."locale-config"(['xmlns:android':"http://schemas.android.com/apk/res/android"]) {
+                locales.forEach { locale ->
+                    destXml."locale"("android:name": locale)
+                }
+            }
+        }
+    }
+}
+
+gradle.projectsEvaluated {
+    preBuild.dependsOn('updateLocalesConfig')
+}
+
+detekt {
+    config = files("$rootDir/detekt.yml")
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
+
+    // AppCompat
+    implementation 'androidx.appcompat:appcompat:1.6.0-rc01'
+
+    // Jetpack Compose core
+    implementation "androidx.compose.ui:ui:$compose_version"
+    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
+    implementation 'androidx.activity:activity-compose:1.6.0'
+
+    // Jetpack Compose - Extended Icons
+    implementation "androidx.compose.material:material-icons-extended:$compose_version"
+
+    // Jetpack Compose - Material 3
+    implementation 'androidx.compose.material3:material3:1.0.0-rc01'
+
+    // Jetpack Compose - Navigation
+    def nav_version = "2.5.2"
+    implementation "androidx.navigation:navigation-compose:$nav_version"
+
+    // Jetpack Compose - Accompanist
+    def accompanist_version = "0.26.5-rc"
+    implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-placeholder-material:$accompanist_version"
+
+    // Jetpack Compose - Dialogs
+    implementation 'io.github.vanpra.compose-material-dialogs:datetime:0.8.1-rc'
+
+    // KotlinX - Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+
+    // LiveData
+    implementation 'androidx.compose.runtime:runtime-livedata:1.3.0-rc01'
+
+    // JTDS driver for SQL Server
+    implementation files('libs/jtds-1.3.1.jar')
+
+    // Timber Logger
+    implementation 'com.jakewharton.timber:timber:5.0.1'
+
+    // About Libraries
+    implementation "com.mikepenz:aboutlibraries-core:$about_libraries_version"
+    implementation "com.mikepenz:aboutlibraries-compose:$about_libraries_version"
+
+    // Room Database
+    def room_version = "2.4.3"
+    implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
+    ksp "androidx.room:room-compiler:$room_version"
+
+    // Core desugaring. Note: 2.0.0 requires AGP >=7.4.0-alpha10
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.0'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
+}
