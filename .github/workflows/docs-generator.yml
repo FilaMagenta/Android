@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           # Upload build dir
-          path: './app/build/dokka/'
+          path: './app/build/dokka/html'
       - name: ✈️ Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
