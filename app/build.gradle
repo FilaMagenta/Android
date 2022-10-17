@@ -4,6 +4,7 @@ plugins {
     id 'com.mikepenz.aboutlibraries.plugin'
     id 'com.google.devtools.ksp'
     id 'io.gitlab.arturbosch.detekt'
+    id 'org.jetbrains.dokka'
 }
 
 android {
@@ -72,8 +73,10 @@ android {
     }
 }
 
-import static groovy.io.FileType.DIRECTORIES
+
 import groovy.xml.MarkupBuilder
+
+import static groovy.io.FileType.DIRECTORIES
 
 /**
  * Obtains a list of all the available locales
@@ -134,6 +137,14 @@ gradle.projectsEvaluated {
 
 detekt {
     config = files("$rootDir/detekt.yml")
+}
+
+dokkaHtml.configure {
+    dokkaSourceSets {
+        named("main") {
+            noAndroidSdkLink.set(false)
+        }
+    }
 }
 
 dependencies {

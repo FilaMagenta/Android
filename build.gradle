@@ -11,9 +11,12 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
+        google()
+        mavenCentral()
     }
     dependencies {
         classpath "com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin:$about_libraries_version"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:${kotlin_version}"
     }
 }
 
