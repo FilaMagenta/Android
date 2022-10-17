@@ -1,0 +1,65 @@
+name: 📃 Releaser
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  update-release-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🤖 Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: 🗒️ Create release
+        uses: release-drafter/release-drafter@v5
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: ☕ Set up JDK 15
+        uses: actions/setup-java@v3
+      - uses: 🧠 actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: 🔒 Prepare secure files
+        run: |
+          echo 'DB_HOSTNAME=${{ secrets.DB_HOSTNAME }}' >> local.properties
+          echo 'DB_DATABASE=${{ secrets.DB_DATABASE }}' >> local.properties
+          echo 'DB_USERNAME=${{ secrets.DB_USERNAME }}' >> local.properties
+          echo 'DB_PASSWORD=${{ secrets.DB_PASSWORD }}' >> local.properties
+      - name: 📦 Build APK
+        id: build_apk
+        run: |
+          echo "Building ${{ steps.create_release.outputs.tag_name }}..."
+          yes | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;33.0.0"
+          bash ./gradlew assembleRelease --stacktrace
+      - name: 🔧 APK Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: APK Artifact
+          path: ./base/build/outputs/apk/release/EscalarAlcoiaIComtat-release.apk
+      - name: 📦 Build AAB
+        id: build_aab
+        run: |
+          echo "Building ${{ steps.create_release.outputs.tag_name }}..."
+          yes | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;32.1.0-rc1"
+          bash ./gradlew :base:bundleRelease --stacktrace
+      - name: Upload to Play Store
+        id: upload_play_store
+        uses: r0adkll/upload-google-play@v1.0.18
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_GOOGLE_CLOUD_JSON }}
+          packageName: com.arnyminerz.filamagenta
+          releaseFiles: ./app/build/outputs/bundle/release/app-release.aab
+          track: internal
+          inAppUpdatePriority: 2
+          # mappingFile: ./base/build/outputs/mapping/release/mapping.txt
+          # whatsNewDirectory: ./changelog
+          status: completed
