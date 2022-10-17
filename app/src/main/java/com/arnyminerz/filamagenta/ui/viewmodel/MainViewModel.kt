@@ -6,20 +6,17 @@ import android.app.Application
 import android.database.sqlite.SQLiteConstraintException
 import androidx.annotation.WorkerThread
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.arnyminerz.filamagenta.BuildConfig
 import com.arnyminerz.filamagenta.R
 import com.arnyminerz.filamagenta.activity.MainActivity
-import com.arnyminerz.filamagenta.data.account.AccountData
 import com.arnyminerz.filamagenta.auth.AccountSingleton
+import com.arnyminerz.filamagenta.data.account.AccountData
 import com.arnyminerz.filamagenta.data.account.Permission
 import com.arnyminerz.filamagenta.database.local.AppDatabase
 import com.arnyminerz.filamagenta.database.local.entity.EventEntity
@@ -31,23 +28,20 @@ import com.arnyminerz.filamagenta.utils.ui
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.net.ConnectException
 import java.sql.Date
 import java.sql.SQLException
-import java.util.concurrent.FutureTask
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * An instance of [Database] for fetching data from the remote database.
-     * TODO: Replace parameters with external variables.
      * @author Arnau Mora
      * @since 20221014
      */
     private val database = Database(
-        "51.91.58.126",
-        "GesTro",
-        "sa",
-        "Magenta1865",
+        BuildConfig.DB_HOSTNAME,
+        BuildConfig.DB_DATABASE,
+        BuildConfig.DB_USERNAME,
+        BuildConfig.DB_PASSWORD,
     )
 
     /**

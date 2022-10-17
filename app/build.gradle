@@ -33,6 +33,13 @@ android {
         buildConfigField "String[]", "TRANSLATION_ARRAY", "new String[]{\"" + locales.join("\",\"") + "\"}"
         resConfigs locales
 
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        buildConfigField "String", "DB_HOSTNAME", '"' + properties.getProperty("DB_HOSTNAME") + '"'
+        buildConfigField "String", "DB_DATABASE", '"' + properties.getProperty("DB_DATABASE") + '"'
+        buildConfigField "String", "DB_USERNAME", '"' + properties.getProperty("DB_USERNAME") + '"'
+        buildConfigField "String", "DB_PASSWORD", '"' + properties.getProperty("DB_PASSWORD") + '"'
+
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
