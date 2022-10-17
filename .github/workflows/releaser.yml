@@ -55,8 +55,8 @@ jobs:
         id: build_aab
         run: |
           echo "Building ${{ steps.create_release.outputs.tag_name }}..."
-          yes | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;32.1.0-rc1"
-          bash ./gradlew :base:bundleRelease --stacktrace
+          # yes | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;32.1.0-rc1"
+          bash ./gradlew :app:bundleRelease --stacktrace
       - name: ✈️ Upload to Play Store
         id: upload_play_store
         uses: r0adkll/upload-google-play@v1.0.18
