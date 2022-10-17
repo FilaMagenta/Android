@@ -183,7 +183,7 @@ dependencies {
     implementation "com.google.accompanist:accompanist-placeholder-material:$accompanist_version"
 
     // Jetpack Compose - Dialogs
-    implementation 'io.github.vanpra.compose-material-dialogs:datetime:0.8.1-rc'
+    implementation 'io.github.vanpra.compose-material-dialogs:datetime:0.9.0'
 
     // KotlinX - Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
