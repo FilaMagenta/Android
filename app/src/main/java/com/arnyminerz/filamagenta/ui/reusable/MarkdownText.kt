@@ -1,5 +1,6 @@
 package com.arnyminerz.filamagenta.ui.reusable
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -11,7 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun MarkdownText(markdown: String) {
-    buildAnnotatedString {
+    val annotatedString = buildAnnotatedString {
         var currentStyle = SpanStyle()
         markdown.split('\n').forEach { line ->
             var c = 0
@@ -50,6 +51,7 @@ fun MarkdownText(markdown: String) {
             }
         }
     }
+    Text(annotatedString)
 }
 
 @Preview
