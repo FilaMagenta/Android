@@ -47,9 +47,25 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            Properties properties = new Properties()
+            properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+            storeFile file("$rootDir/keystore.jks")
+            storePassword properties.get('KEYSTORE_PASSWORD')
+            keyAlias properties.get('KEYSTORE_USERNAME')
+            keyPassword properties.get('KEYSTORE_PASSWORD')
+
+            // Optional, specify signing versions used
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
