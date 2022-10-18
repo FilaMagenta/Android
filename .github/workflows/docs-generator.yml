@@ -41,7 +41,8 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: 🔒 Prepare secure files
         run: |
-          echo '${{ secrets.GOOGLE_SERVICES }}' > ./app/google-services.json
+          echo 'KEYSTORE_USERNAME=${{ secrets.KEYSTORE_USERNAME }}' >> local.properties
+          echo 'KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}' >> local.properties
           echo 'DB_HOSTNAME=${{ secrets.DB_HOSTNAME }}' >> local.properties
           echo 'DB_DATABASE=${{ secrets.DB_DATABASE }}' >> local.properties
           echo 'DB_USERNAME=${{ secrets.DB_USERNAME }}' >> local.properties
