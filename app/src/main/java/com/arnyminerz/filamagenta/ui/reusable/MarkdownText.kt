@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -24,6 +25,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import timber.log.Timber
 
+/**
+ * Provides the default values for calling [MarkdownText] and [markdownAnnotated].
+ * @author Arnau Mora
+ * @since 20221019
+ */
 object MarkdownTextDefaults {
     val bodyStyle: TextStyle
         @Composable
@@ -55,6 +61,17 @@ object MarkdownTextDefaults {
     const val bullet = '\u2022'
 }
 
+/**
+ * Annotates the [String] using Markdown formatting.
+ * @author Arnau Mora
+ * @since 20221019
+ * @param bodyStyle The default style for the body, and non-annotated texts.
+ * @param headlineDepthStyles A list of styles that will be used for headlines. Each element of the
+ * list matches the depth given by adding `#`. Example: `###` will use the element at `2` of the list.
+ * @param bullet The character to use as bullet for lists.
+ * @param linkColor The color to use for tinting links.
+ * @return As [AnnotatedString] instance formatted with the given markdown.
+ */
 @Composable
 private fun String.markdownAnnotated(
     bodyStyle: TextStyle = MarkdownTextDefaults.bodyStyle,
@@ -156,6 +173,25 @@ private fun String.markdownAnnotated(
     }
 }
 
+/**
+ * Creates a Text component that supports markdown formatting.
+ * @author Arnau Mora
+ * @since 20221019
+ * @param markdown The markdown-formatted text to display.
+ * @param modifier Modifiers to apply to the wrapper.
+ * @param softWrap Whether the text should break at soft line breaks. If false, the glyphs in the
+ * text will be positioned as if there was unlimited horizontal space. If [softWrap] is `false`,
+ * [overflow] and TextAlign may have unexpected effects.
+ * @param overflow How visual overflow should be handled.
+ * @param maxLines An optional maximum number of lines for the text to span, wrapping if necessary.
+ * If the text exceeds the given number of lines, it will be truncated according to [overflow] and
+ * [softWrap]. If it is not null, then it must be greater than zero.
+ * @param bodyStyle The default style for the body, and non-annotated texts.
+ * @param headlineDepthStyles A list of styles that will be used for headlines. Each element of the
+ * list matches the depth given by adding `#`. Example: `###` will use the element at `2` of the list.
+ * @param bullet The character to use as bullet for lists.
+ * @param linkColor The color to use for tinting links.
+ */
 @Composable
 fun MarkdownText(
     markdown: String,
