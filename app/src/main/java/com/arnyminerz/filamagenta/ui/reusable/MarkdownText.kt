@@ -66,7 +66,7 @@ fun MarkdownText(
                 val headline = line.substring(depth + 1)
                 val typography = headlineDepthStyles.getOrElse(depth) { TextStyle.Default }
                 withStyle(typography.toSpanStyle()) { append(headline) }
-            } else if (line.startsWith('-') || line.startsWith('*')) { // List
+            } else if (line.startsWith('-')) { // List
                 val item = line.substring(1)
                 append("$Bullet\t$item")
             } else {
@@ -179,10 +179,10 @@ fun MarkdownTextPreview() {
                     "###### And even deeper\n" +
                     "Remember _this_ ~not this~? Also works!\n" +
                     "[This](https://example.com) is a link.\n" +
-                    "* Lists\n" +
-                    "* are\n" +
+                    "- Lists\n" +
+                    "- are\n" +
                     "- also\n" +
-                    "* supported\n",
+                    "- supported\n",
             modifier = Modifier
                 .padding(horizontal = 8.dp),
         )
