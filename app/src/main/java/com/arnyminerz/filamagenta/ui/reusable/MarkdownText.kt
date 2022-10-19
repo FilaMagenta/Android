@@ -1,9 +1,12 @@
 package com.arnyminerz.filamagenta.ui.reusable
 
+import android.content.ActivityNotFoundException
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -12,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import timber.log.Timber
 
 private val headlineDepthStyles
     @Composable
@@ -23,6 +27,8 @@ private val headlineDepthStyles
         MaterialTheme.typography.titleMedium,
         MaterialTheme.typography.titleSmall,
     )
+
+private const val LinkColor = 0xff64B5F6
 
 @Composable
 fun MarkdownText(markdown: String) {
@@ -69,6 +75,34 @@ fun MarkdownText(markdown: String) {
                         else
                             currentStyle.copy(textDecoration = TextDecoration.Underline)
                         c++
+                    } else if (char == '[') { // Starts a link
+                        // Search for the closing tag
+                        val preClosing = line.indexOf(']', c + 1)
+                        // Search for the actual link start
+                        val lOpen = line.indexOf('(', c + 1)
+                        // And the ending
+                        val lClose = line.indexOf(')', c + 1)
+
+                        // Check if link is valid
+                        if (preClosing < 0 || lOpen < 0 || lClose < 0 || lOpen > lClose || preClosing > lOpen) {
+                            append(char)
+                            c++
+                        } else {
+                            val link = line.substring(lOpen + 1, lClose)
+                            val text = line.substring(c + 1, preClosing)
+                            pushStringAnnotation(
+                                tag = "link",
+                                annotation = link,
+                            )
+                            withStyle(
+                                currentStyle.copy(
+                                    textDecoration = TextDecoration.Underline,
+                                    color = Color(LinkColor),
+                                ),
+                            ) { append(text) }
+                            pop()
+                            c = lClose + 1
+                        }
                     } else {
                         append(char)
                         c++
@@ -78,7 +112,22 @@ fun MarkdownText(markdown: String) {
             append('\n')
         }
     }
-    Text(annotatedString)
+
+    val uriHandler = LocalUriHandler.current
+    ClickableText(
+        text = annotatedString,
+        onClick = {
+            annotatedString
+                .getStringAnnotations("link", it, it)
+                .firstOrNull()?.let { stringAnnotation ->
+                    try {
+                        uriHandler.openUri(stringAnnotation.item)
+                    } catch (e: ActivityNotFoundException) {
+                        Timber.e(e, "Could not find link handler.")
+                    }
+                }
+        }
+    )
 }
 
 @Preview
@@ -97,7 +146,8 @@ fun MarkdownTextPreview() {
                     "#### Deeper\n" +
                     "##### And Deeper\n" +
                     "###### And even deeper\n" +
-                    "Remember _this_ ~not this~? Also works!"
+                    "Remember _this_ ~not this~? Also works!\n" +
+                    "[This](https://example.com) is a link."
         )
     }
 }
