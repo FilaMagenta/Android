@@ -30,6 +30,13 @@ private val headlineDepthStyles
 
 private const val LinkColor = 0xff64B5F6
 
+/**
+ * The character used by [MarkdownText] to mark list items.
+ * @author Arnau Mora
+ * @since 20221019
+ */
+private const val Bullet = '\u2022'
+
 @Composable
 fun MarkdownText(markdown: String) {
     val annotatedString = buildAnnotatedString {
@@ -43,6 +50,9 @@ fun MarkdownText(markdown: String) {
                 val headline = line.substring(depth + 1)
                 val typography = headlineDepthStyles.getOrElse(depth) { TextStyle.Default }
                 withStyle(typography.toSpanStyle()) { append(headline) }
+            } else if (line.startsWith('-') || line.startsWith('*')) { // List
+                val item = line.substring(1)
+                append("$Bullet\t$item")
             } else {
                 var currentStyle = SpanStyle()
                 var c = 0
