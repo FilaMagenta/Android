@@ -38,7 +38,14 @@ private const val LinkColor = 0xff64B5F6
 private const val Bullet = '\u2022'
 
 @Composable
-fun MarkdownText(markdown: String) {
+fun MarkdownText(
+    markdown: String,
+    modifier: Modifier = Modifier,
+    style: TextStyle = TextStyle.Default,
+    softWrap: Boolean = true,
+    overflow: TextOverflow = TextOverflow.Visible,
+    maxLines: Int = Int.MAX_VALUE,
+) {
     val annotatedString = buildAnnotatedString {
         markdown.split('\n').forEach { line ->
             val headlineIndex = line.indexOf('#')
@@ -126,6 +133,11 @@ fun MarkdownText(markdown: String) {
     val uriHandler = LocalUriHandler.current
     ClickableText(
         text = annotatedString,
+        modifier = modifier,
+        overflow = overflow,
+        maxLines = maxLines,
+        style = style,
+        softWrap = softWrap,
         onClick = {
             annotatedString
                 .getStringAnnotations("link", it, it)
@@ -157,7 +169,13 @@ fun MarkdownTextPreview() {
                     "##### And Deeper\n" +
                     "###### And even deeper\n" +
                     "Remember _this_ ~not this~? Also works!\n" +
-                    "[This](https://example.com) is a link."
+                    "[This](https://example.com) is a link.\n" +
+                    "* Lists\n" +
+                    "* are\n" +
+                    "- also\n" +
+                    "* supported\n",
+            modifier = Modifier
+                .padding(horizontal = 8.dp),
         )
     }
 }
