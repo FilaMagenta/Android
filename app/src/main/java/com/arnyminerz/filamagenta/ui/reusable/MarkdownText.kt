@@ -159,7 +159,7 @@ fun MarkdownText(
     Column(
         modifier = modifier,
     ) {
-        markdown.split('\n').forEach { line ->
+        markdown.split(System.lineSeparator()).forEach { line ->
             Timber.d("Line: $line")
             if (line.startsWith("--")) // If starts with at least two '-', add divider
                 Divider()
@@ -220,7 +220,7 @@ fun MarkdownTextPreview() {
                 "- supported",
                 "--------",
                 "That is a hr!"
-            ).joinToString("\n"),
+            ).joinToString(System.lineSeparator()),
             modifier = Modifier
                 .padding(horizontal = 8.dp),
             style = MaterialTheme.typography.bodyMedium,
