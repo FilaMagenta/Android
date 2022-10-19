@@ -96,7 +96,8 @@ fun MarkdownTextPreview() {
                     "### That get\n" +
                     "#### Deeper\n" +
                     "##### And Deeper\n" +
-                    "###### And even deeper\n"
+                    "###### And even deeper\n" +
+                    "Remember _this_ ~not this~? Also works!"
         )
     }
 }
