@@ -2,9 +2,11 @@ package com.arnyminerz.filamagenta.ui.reusable
 
 import android.content.ActivityNotFoundException
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
@@ -13,8 +15,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import timber.log.Timber
 
 private val headlineDepthStyles
@@ -28,6 +32,11 @@ private val headlineDepthStyles
         MaterialTheme.typography.titleSmall,
     )
 
+/**
+ * The color given to links in [MarkdownText].
+ * @author Arnau Mora
+ * @since 20221019
+ */
 private const val LinkColor = 0xff64B5F6
 
 /**
