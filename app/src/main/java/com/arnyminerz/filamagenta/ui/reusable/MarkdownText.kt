@@ -24,33 +24,44 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import timber.log.Timber
 
-private val headlineDepthStyles
-    @Composable
-    get() = listOf(
-        MaterialTheme.typography.headlineLarge,
-        MaterialTheme.typography.headlineMedium,
-        MaterialTheme.typography.headlineSmall,
-        MaterialTheme.typography.titleLarge,
-        MaterialTheme.typography.titleMedium,
-        MaterialTheme.typography.titleSmall,
-    )
+object MarkdownTextDefaults {
+    val bodyStyle: TextStyle
+        @Composable
+        get() = MaterialTheme.typography.bodyMedium
 
-/**
- * The color given to links in [MarkdownText].
- * @author Arnau Mora
- * @since 20221019
- */
-private const val LinkColor = 0xff64B5F6
+    val headlineDepthStyles
+        @Composable
+        get() = listOf(
+            MaterialTheme.typography.headlineLarge,
+            MaterialTheme.typography.headlineMedium,
+            MaterialTheme.typography.headlineSmall,
+            MaterialTheme.typography.titleLarge,
+            MaterialTheme.typography.titleMedium,
+            MaterialTheme.typography.titleSmall,
+        )
 
-/**
- * The character used by [MarkdownText] to mark list items.
- * @author Arnau Mora
- * @since 20221019
- */
-private const val Bullet = '\u2022'
+    /**
+     * The color given to links in [MarkdownText].
+     * @author Arnau Mora
+     * @since 20221019
+     */
+    val linkColor = Color(0xff64B5F6)
+
+    /**
+     * The character used by [MarkdownText] to mark list items.
+     * @author Arnau Mora
+     * @since 20221019
+     */
+    const val bullet = '\u2022'
+}
 
 @Composable
-private fun String.markdownAnnotated(typography: TextStyle) = buildAnnotatedString {
+private fun String.markdownAnnotated(
+    bodyStyle: TextStyle = MarkdownTextDefaults.bodyStyle,
+    headlineDepthStyles: List<TextStyle> = MarkdownTextDefaults.headlineDepthStyles,
+    bullet: Char = MarkdownTextDefaults.bullet,
+    linkColor: Color = MarkdownTextDefaults.linkColor,
+) = buildAnnotatedString {
     val headlineIndex = indexOf('#')
     if (headlineIndex >= 0) {
         // This is header, count depth
@@ -62,12 +73,12 @@ private fun String.markdownAnnotated(typography: TextStyle) = buildAnnotatedStri
         withStyle(headlineTypography.toSpanStyle()) { append(headline) }
     } else if (startsWith('-')) { // List
         val item = substring(1)
-        append("$Bullet\t$item")
+        append("$bullet\t$item")
     } else {
         val lineLength = this@markdownAnnotated.length
-        var lastStyle = typography.toSpanStyle()
+        var lastStyle = bodyStyle.toSpanStyle()
         var c = 0
-        pushStyle(typography.toSpanStyle())
+        pushStyle(bodyStyle.toSpanStyle())
         while (c < lineLength) {
             val char = get(c)
             val nextChar = c.takeIf { it + 1 < lineLength }?.let { get(it + 1) }
@@ -129,7 +140,7 @@ private fun String.markdownAnnotated(typography: TextStyle) = buildAnnotatedStri
                     pushStyle(
                         lastStyle.copy(
                             textDecoration = TextDecoration.Underline,
-                            color = Color(LinkColor),
+                            color = linkColor,
                         ),
                     )
                     append(text)
@@ -149,10 +160,13 @@ private fun String.markdownAnnotated(typography: TextStyle) = buildAnnotatedStri
 fun MarkdownText(
     markdown: String,
     modifier: Modifier = Modifier,
-    style: TextStyle = TextStyle.Default,
     softWrap: Boolean = true,
     overflow: TextOverflow = TextOverflow.Visible,
     maxLines: Int = Int.MAX_VALUE,
+    bodyStyle: TextStyle = MarkdownTextDefaults.bodyStyle,
+    headlineDepthStyles: List<TextStyle> = MarkdownTextDefaults.headlineDepthStyles,
+    bullet: Char = MarkdownTextDefaults.bullet,
+    linkColor: Color = MarkdownTextDefaults.linkColor,
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -164,7 +178,9 @@ fun MarkdownText(
             if (line.startsWith("--")) // If starts with at least two '-', add divider
                 Divider()
             else {
-                val annotatedString = line.markdownAnnotated(style)
+                val annotatedString = line.markdownAnnotated(
+                    bodyStyle, headlineDepthStyles, bullet, linkColor
+                )
                 Timber.d("Annotated line: $annotatedString")
 
                 ClickableText(
@@ -174,7 +190,7 @@ fun MarkdownText(
                         .padding(0.dp),
                     overflow = overflow,
                     maxLines = maxLines,
-                    style = style,
+                    style = bodyStyle,
                     softWrap = softWrap,
                     onClick = {
                         annotatedString
@@ -223,7 +239,7 @@ fun MarkdownTextPreview() {
             ).joinToString(System.lineSeparator()),
             modifier = Modifier
                 .padding(horizontal = 8.dp),
-            style = MaterialTheme.typography.bodyMedium,
+            bodyStyle = MaterialTheme.typography.bodyMedium,
         )
     }
 }
