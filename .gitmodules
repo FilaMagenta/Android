@@ -1,0 +1,3 @@
+[submodule "markdown-text"]
+	path = markdown-text
+	url = https://github.com/ArnyminerZ/MarkdownText.git
