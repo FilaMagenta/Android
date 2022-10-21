@@ -56,6 +56,7 @@ import com.arnyminerz.filamagenta.ui.reusable.TableMemberItem
 import com.arnyminerz.filamagenta.ui.viewmodel.MainViewModel
 import com.arnyminerz.filamagenta.utils.startAddToCalendar
 import com.arnyminerz.filamagenta.utils.toast
+import com.arnyminerz.markdowntext.MarkdownText
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
@@ -253,12 +254,12 @@ fun EventScreen(
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Text(
+                    MarkdownText(
                         event.description,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 8.dp, bottom = 8.dp, end = 8.dp),
+                        // style = MaterialTheme.typography.bodyLarge,
+                        // modifier = Modifier
+                        //    .fillMaxWidth()
+                        //    .padding(start = 8.dp, bottom = 8.dp, end = 8.dp),
                     )
                 }
 
