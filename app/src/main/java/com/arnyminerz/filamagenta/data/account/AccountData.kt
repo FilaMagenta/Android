@@ -2,11 +2,11 @@ package com.arnyminerz.filamagenta.data.account
 
 import com.arnyminerz.filamagenta.utils.asStringList
 import com.arnyminerz.filamagenta.utils.getDate
-import com.arnyminerz.filamagenta.utils.getDateOrNull
 import com.arnyminerz.filamagenta.utils.getIntOrNull
+import com.arnyminerz.filamagenta.utils.getJSONObjectOrNull
 import com.arnyminerz.filamagenta.utils.getStringOrNull
 import com.arnyminerz.filamagenta.utils.putDate
-import com.arnyminerz.filamagenta.utils.serialize.DatabaseSerializer
+import com.arnyminerz.filamagenta.utils.serialize
 import com.arnyminerz.filamagenta.utils.serialize.JsonSerializable
 import com.arnyminerz.filamagenta.utils.serialize.JsonSerializer
 import org.json.JSONArray
@@ -27,44 +27,15 @@ data class AccountData(
     val mobilePhone: String?,
     val email: String,
     val profileImage: String?,
-    val whiteWheelNumber: Int?,
-    val blackWheelNumber: Int?,
+    val whiteWheel: Wheel?,
+    val blackWheel: Wheel?,
     val age: Int?,
-    val trebuchetObtained: Boolean,
-    val trebuchetShoots: Boolean,
-    val trebuchetDate: Date?,
-    val trebuchetExpiration: Date?,
+    val trebuchetData: TrebuchetData?,
     val type: FesterType,
     val paymentMethod: PaymentMethod,
     val permissions: List<Permission>,
 ) : JsonSerializable() {
-    companion object : DatabaseSerializer<AccountData>, JsonSerializer<AccountData> {
-        override fun fromDatabaseRow(row: Map<String, Any?>): AccountData = AccountData(
-            id = row["idSocio"] as Long,
-            name = row["Nombre"] as String,
-            familyName = row["Apellidos"] as String,
-            address = row["Direccion"] as String,
-            postalCode = row["idCodPostal"] as Int,
-            dni = row["Dni"] as String,
-            born = row["FecNacimiento"] as Date,
-            registrationDate = row["FecAlta"] as Date,
-            phone = row["TlfParticular"] as String?,
-            workPhone = row["TlfTrabajo"] as String?,
-            mobilePhone = row["TlfMovil"] as String?,
-            email = row["eMail"] as String,
-            profileImage = row["Fotografia"] as String?,
-            whiteWheelNumber = row["nrRodaBlancos"] as Int?,
-            blackWheelNumber = row["nrRodaNegros"] as Int?,
-            age = row["nrAntiguedad"] as Int?,
-            trebuchetObtained = row["bCarnetAvancarga"] as Boolean,
-            trebuchetShoots = row["bDisparaAvancarga"] as Boolean,
-            trebuchetDate = row["FecExpedicionAvancarga"] as Date?,
-            trebuchetExpiration = row["FecCaducidadAvancarga"] as Date?,
-            type = FesterType.valueOf(row["idTipoFestero"] as Int? ?: -1),
-            paymentMethod = PaymentMethod.valueOf(row["idFormaPago"] as Int? ?: -1),
-            permissions = emptyList(),
-        )
-
+    companion object : JsonSerializer<AccountData> {
         override fun fromJson(json: JSONObject): AccountData = AccountData(
             json.getLong("id"),
             json.getString("name"),
@@ -79,13 +50,10 @@ data class AccountData(
             json.getStringOrNull("mobilePhone"),
             json.getString("email"),
             json.getStringOrNull("profileImage"),
-            json.getIntOrNull("whiteWheel"),
-            json.getIntOrNull("blackWheel"),
+            json.getJSONObject("wheel").getJSONObjectOrNull("whites")?.serialize(Wheel.Companion),
+            json.getJSONObject("wheel").getJSONObjectOrNull("blacks")?.serialize(Wheel.Companion),
             json.getIntOrNull("age"),
-            json.getBoolean("trebuchetObtained"),
-            json.getBoolean("trebuchetShoots"),
-            json.getDateOrNull("trebuchetDate"),
-            json.getDateOrNull("trebuchetExpiration"),
+            json.getJSONObjectOrNull("trebuchet")?.serialize(TrebuchetData.Companion),
             FesterType.valueOf(json.getInt("type")),
             PaymentMethod.valueOf(json.getInt("payment")),
             json.getJSONArray("permissions").asStringList.map { Permission.valueOf(it) },
@@ -106,13 +74,12 @@ data class AccountData(
         put("mobilePhone", mobilePhone)
         put("email", email)
         put("profileImage", profileImage)
-        put("whiteWheel", whiteWheelNumber)
-        put("blackWheel", blackWheelNumber)
+        put("wheel", JSONObject().apply {
+            put("whites", whiteWheel?.toJson())
+            put("blacks", blackWheel?.toJson())
+        })
         put("age", age)
-        put("trebuchetObtained", trebuchetObtained)
-        put("trebuchetShoots", trebuchetShoots)
-        putDate("trebuchetDate", trebuchetDate)
-        putDate("trebuchetExpiration", trebuchetExpiration)
+        put("trebuchet", trebuchetData?.toJson())
         put("type", type.dbType)
         put("payment", paymentMethod.id)
         put("permissions", JSONArray(permissions.map { it.name }))

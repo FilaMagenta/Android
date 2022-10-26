@@ -1,5 +1,7 @@
 package com.arnyminerz.filamagenta.database.local.entity
 
+import android.content.Context
+import androidx.annotation.WorkerThread
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -7,9 +9,17 @@ import androidx.room.PrimaryKey
 import com.arnyminerz.filamagenta.data.account.FesterType
 import com.arnyminerz.filamagenta.data.event.EventType
 import com.arnyminerz.filamagenta.data.event.Menu
-import com.arnyminerz.filamagenta.database.local.dao.EventsDao
-import com.arnyminerz.filamagenta.utils.json
-import com.arnyminerz.filamagenta.utils.serialize.DatabaseSerializer
+import com.arnyminerz.filamagenta.data.event.TableData
+import com.arnyminerz.filamagenta.database.local.AppDatabase
+import com.arnyminerz.filamagenta.database.remote.RemoteInterface
+import com.arnyminerz.filamagenta.utils.asLongList
+import com.arnyminerz.filamagenta.utils.getDate
+import com.arnyminerz.filamagenta.utils.getJSONArrayOrNull
+import com.arnyminerz.filamagenta.utils.getJSONObjectOrNull
+import com.arnyminerz.filamagenta.utils.getStringOrNull
+import com.arnyminerz.filamagenta.utils.serialize
+import com.arnyminerz.filamagenta.utils.serialize.JsonSerializer
+import org.json.JSONObject
 import java.util.Date
 
 @Entity(
@@ -22,20 +32,21 @@ data class EventEntity(
     @ColumnInfo(name = "contact") val contact: String?,
     @ColumnInfo(name = "menu") val menu: Menu?,
     @ColumnInfo(name = "description") val description: String?,
-    @ColumnInfo(name = "assistance") val assistance: List<Long>,
+    @ColumnInfo(name = "assistance") val assistance: List<Long>?,
+    @ColumnInfo(name = "tables") val tables: List<TableData>?,
     @ColumnInfo(name = "type") val type: EventType,
 ) : EntityInt {
-    companion object : DatabaseSerializer<EventEntity> {
-        override fun fromDatabaseRow(row: Map<String, Any?>) = EventEntity(
-            // Adds 1 since Room starts counting at 1, and SQL Server at 0
-            row.getValue("id") as Long + 1,
-            row.getValue("DisplayName") as String,
-            row.getValue("Date") as Date,
-            row.getValue("Contact") as String?,
-            (row["Menu"] as String?)?.json?.let { Menu.fromJson(it) },
-            row.getValue("Description") as String?,
-            emptyList(),
-            (row.getValue("Category") as Long).let { EventType.valueOf(it) ?: EventType.GENERIC },
+    companion object : JsonSerializer<EventEntity> {
+        override fun fromJson(json: JSONObject): EventEntity = EventEntity(
+            id = json.getLong("id"),
+            name = json.getString("displayName"),
+            date = json.getDate("date"),
+            menu = json.getJSONObjectOrNull("Menu")?.serialize(Menu.Companion),
+            contact = json.getStringOrNull("contact"),
+            description = json.getStringOrNull("description"),
+            assistance = json.getJSONArrayOrNull("attending")?.asLongList,
+            tables = json.getJSONArrayOrNull("tables")?.serialize(TableData.Companion),
+            type = EventType.valueOf(json.getLong("category")) ?: EventType.GENERIC,
         )
     }
 
@@ -60,17 +71,6 @@ data class EventEntity(
     }
 
     /**
-     * Tries to get the table that matches a given person.
-     * @author Arnau Mora
-     * @since 20221015
-     * @param eventsDao An [EventsDao] instance for fetching the tables data from.
-     * @param personId The id of the person to search for.
-     * @return `null` if the person doesn't have any table assigned. Its [TableEntity] otherwise.
-     */
-    suspend fun getTable(eventsDao: EventsDao, personId: Long) =
-        eventsDao.getAllTables().find { it.people.contains(personId) }
-
-    /**
      * Finds the price from [menu] for the given [FesterType].
      * @author Arnau Mora
      * @since 20221015
@@ -93,4 +93,17 @@ data class EventEntity(
 
     fun hasAllCapabilities(vararg capabilities: EventType.Capabilities) =
         capabilities.all { hasCapability(it) }
+
+    @WorkerThread
+    suspend fun getAssistanceData(context: Context, accountIndex: Int) = assistance?.map { userId ->
+        AppDatabase.getInstance(context)
+            .peopleDao()
+            .getById(userId)
+            ?: RemoteInterface.getInstance(context).getAccountData(userId, accountIndex)
+    }
 }
+
+fun List<EventEntity>.assists(userId: Long) =
+    find { entity ->
+        entity.tables?.find { it.members.contains(userId) } != null
+    } != null

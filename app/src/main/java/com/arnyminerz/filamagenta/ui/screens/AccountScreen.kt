@@ -153,13 +153,13 @@ fun MainActivity.AccountScreen(account: AccountData) {
             ) {
                 WheelNumber(
                     label = R.string.account_wheel_white,
-                    number = account.whiteWheelNumber
+                    wheel = account.whiteWheel,
                 )
                 WheelNumber(
                     label = R.string.account_wheel_black,
-                    number = account.blackWheelNumber
+                    wheel = account.blackWheel,
                 )
-                WheelNumber(label = R.string.account_antiquity, number = account.age)
+                // WheelNumber(label = R.string.account_antiquity, number = account.age)
             }
             Card(
                 modifier = Modifier
@@ -193,7 +193,7 @@ fun MainActivity.AccountScreen(account: AccountData) {
                     R.string.account_personal_data_payment_method
                 )
             }
-            if (account.trebuchetObtained)
+            if (account.trebuchetData != null)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -205,14 +205,13 @@ fun MainActivity.AccountScreen(account: AccountData) {
                         modifier = Modifier.padding(8.dp),
                     )
                     LabeledTextField(
-                        account.trebuchetDate,
+                        account.trebuchetData.obtained,
                         R.string.account_trebuchet_date,
                     )
                     LabeledTextField(
-                        account.trebuchetExpiration,
+                        account.trebuchetData.expires,
                         R.string.account_trebuchet_expiration,
-                        trailing = account.trebuchetExpiration
-                            .takeIf { it != null }
+                        trailing = account.trebuchetData.expires
                             ?.let { date ->
                                 {
                                     AddToCalendarIconButton(

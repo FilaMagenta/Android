@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.arnyminerz.filamagenta.R
 
 enum class EventType(
-    val dbValue: Long,
+    val category: Long,
     val icon: ImageVector,
     val capabilities: Array<Capabilities>,
     @StringRes val localizedName: Int,
@@ -34,7 +34,7 @@ enum class EventType(
     );
 
     companion object {
-        fun valueOf(dbValue: Long) = values().find { it.dbValue == dbValue }
+        fun valueOf(dbValue: Long) = values().find { it.category == dbValue }
     }
 
     enum class Capabilities {

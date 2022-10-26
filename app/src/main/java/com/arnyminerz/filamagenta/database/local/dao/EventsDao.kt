@@ -9,7 +9,6 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.arnyminerz.filamagenta.database.local.entity.EventEntity
-import com.arnyminerz.filamagenta.database.local.entity.TableEntity
 
 @Dao
 interface EventsDao {
@@ -39,25 +38,4 @@ interface EventsDao {
     @WorkerThread
     @Throws(SQLiteConstraintException::class)
     suspend fun remove(table: EventEntity)
-
-    @Insert
-    @WorkerThread
-    @Throws(SQLiteConstraintException::class)
-    suspend fun add(table: TableEntity)
-
-    @Delete
-    @WorkerThread
-    @Throws(SQLiteConstraintException::class)
-    suspend fun remove(table: TableEntity)
-
-    @WorkerThread
-    @Query("UPDATE tables SET people=:people WHERE id=:tableId")
-    suspend fun updatePeople(tableId: Long, people: List<Long>)
-
-    @Query("SELECT * FROM tables")
-    suspend fun getAllTables(): List<TableEntity>
-
-    @WorkerThread
-    @Query("SELECT * FROM tables")
-    fun getTablesLive(): LiveData<List<TableEntity>>
 }

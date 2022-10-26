@@ -27,6 +27,7 @@ android {
         multiDexEnabled true
 
         buildConfigField "String", "ACCOUNT_TYPE", '"fila_magenta"'
+        buildConfigField "String", "AUTH_TOKEN_TYPE", '"fila_magenta"'
         resValue "string", "ACCOUNT_TYPE", "fila_magenta"
 
         def locales = getLocales()
@@ -35,10 +36,7 @@ android {
 
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
-        buildConfigField "String", "DB_HOSTNAME", '"' + properties.getProperty("DB_HOSTNAME") + '"'
-        buildConfigField "String", "DB_DATABASE", '"' + properties.getProperty("DB_DATABASE") + '"'
-        buildConfigField "String", "DB_USERNAME", '"' + properties.getProperty("DB_USERNAME") + '"'
-        buildConfigField "String", "DB_PASSWORD", '"' + properties.getProperty("DB_PASSWORD") + '"'
+        buildConfigField "String", "REST_BASE", '"' + properties.getProperty("REST_BASE") + '"'
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -222,6 +220,9 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     ksp "androidx.room:room-compiler:$room_version"
+
+    // Volley for http requests
+    implementation 'com.android.volley:volley:1.2.1'
 
     // Core desugaring. Note: 2.0.0 requires AGP >=7.4.0-alpha10
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.0'

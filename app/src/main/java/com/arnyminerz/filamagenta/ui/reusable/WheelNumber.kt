@@ -13,9 +13,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arnyminerz.filamagenta.data.account.Wheel
 
 @Composable
-fun RowScope.WheelNumber(@StringRes label: Int, number: Int?) {
+fun RowScope.WheelNumber(@StringRes label: Int, wheel: Wheel?) {
     Card(
         modifier = Modifier
             .weight(1f)
@@ -30,7 +31,7 @@ fun RowScope.WheelNumber(@StringRes label: Int, number: Int?) {
                 .padding(top = 4.dp),
         )
         Text(
-            number?.toString() ?: "--",
+            wheel?.number?.toString() ?: "--",
             style = MaterialTheme.typography.labelLarge,
             fontSize = 30.sp,
             textAlign = TextAlign.Center,

@@ -11,13 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.arnyminerz.filamagenta.R
 import com.arnyminerz.filamagenta.data.account.AccountData
-import com.arnyminerz.filamagenta.database.local.entity.SocioEntity
+import com.arnyminerz.filamagenta.database.local.entity.ShortPersonData
 
 @Composable
 @ExperimentalMaterial3Api
 fun TableMemberItem(
     personId: Long,
-    people: List<SocioEntity>?,
+    people: List<ShortPersonData>?,
     loggedInAccount: AccountData,
     isResponsible: Boolean = false,
 ) {
@@ -39,7 +39,7 @@ fun TableMemberItem(
                 )
         },
         trailingContent = {
-            if (loggedInAccount.id.toLong() == personId)
+            if (loggedInAccount.id == personId)
                 Badge {
                     Text(stringResource(R.string.badge_you))
                 }

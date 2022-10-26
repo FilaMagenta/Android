@@ -8,6 +8,7 @@ import java.sql.DriverManager
 import java.sql.SQLException
 import kotlin.reflect.KClass
 
+@Deprecated("Use REST API with RemoteInterface.")
 class Database(
     private val hostname: String,
     private val database: String,

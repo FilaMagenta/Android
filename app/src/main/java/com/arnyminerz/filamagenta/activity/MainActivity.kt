@@ -1,8 +1,6 @@
 package com.arnyminerz.filamagenta.activity
 
-import android.os.Build
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -73,12 +71,6 @@ class MainActivity : AppCompatActivity() {
 
             viewModel.load(navController)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        viewModel.disconnect()
     }
 
     override fun onResume() {

@@ -2,7 +2,9 @@ package com.arnyminerz.filamagenta.auth
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.accounts.AccountManager.KEY_AUTHTOKEN
 import android.accounts.AccountManager.KEY_BOOLEAN_RESULT
+import android.accounts.OperationCanceledException
 import android.app.Activity
 import android.content.Context
 import android.os.Build
@@ -106,10 +108,11 @@ class AccountSingleton private constructor(context: Context) {
      * @return `true` if the account was added successfully, `false` otherwise.
      */
     @WorkerThread
-    fun addAccount(accountData: AccountData, password: String) =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+    fun addAccount(accountData: AccountData, password: String, token: String): Boolean {
+        val account = Account(accountData.username, ACCOUNT_TYPE)
+        val success = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             accountManager.addAccountExplicitly(
-                Account(accountData.username, ACCOUNT_TYPE),
+                account,
                 password,
                 Bundle().apply { putJson("data", accountData) },
                 mapOf(
@@ -119,11 +122,16 @@ class AccountSingleton private constructor(context: Context) {
                 .also { getAccounts() }
         else
             accountManager.addAccountExplicitly(
-                Account(accountData.username, ACCOUNT_TYPE),
+                account,
                 password,
                 Bundle().apply { putJson("data", accountData) },
             ).also { if (it) loggedIn.postValue(true) }
                 .also { getAccounts() }
+        if (!success)
+            return false
+        accountManager.setAuthToken(account, BuildConfig.AUTH_TOKEN_TYPE, token)
+        return true
+    }
 
     /**
      * Removes the specified account.
@@ -148,4 +156,30 @@ class AccountSingleton private constructor(context: Context) {
                 .removeAccount(account, {}, Handler(activity.mainLooper))
                 .getResult(timeout, TimeUnit.SECONDS)
                 .also { if (it) notifyAccountRemoved(account) }
+
+    /**
+     * Gets the stored token of the given account.
+     * @author Arnau Mora
+     * @since 20221025
+     * @param account The account to get the token from.
+     * @param timeout The maximum amount of time to wait until the resolution of the token.
+     * @return The token stored in the account.
+     * @throws OperationCanceledException If the operation timed out.
+     * @throws NullPointerException If the returned auth token data doesn't contain a valid token.
+     */
+    @Throws(OperationCanceledException::class, NullPointerException::class)
+    fun getToken(
+        account: Account,
+        timeout: Pair<Long, TimeUnit> = 10L to TimeUnit.SECONDS
+    ): String {
+        val tokenBundle = accountManager.getAuthToken(
+            account,
+            BuildConfig.AUTH_TOKEN_TYPE,
+            null,
+            true,
+            null,
+            null,
+        ).getResult(timeout.first, timeout.second)
+        return tokenBundle.getString(KEY_AUTHTOKEN)!!
+    }
 }

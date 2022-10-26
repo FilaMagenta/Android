@@ -52,6 +52,7 @@ import com.arnyminerz.filamagenta.database.local.entity.EventEntity
 import com.arnyminerz.filamagenta.ui.dialog.ConfirmAssistanceDialog
 import com.arnyminerz.filamagenta.ui.dialog.PricesDialog
 import com.arnyminerz.filamagenta.ui.dialog.TableSelectionDialog
+import com.arnyminerz.filamagenta.ui.reusable.LoadingIndicatorBox
 import com.arnyminerz.filamagenta.ui.reusable.TableMemberItem
 import com.arnyminerz.filamagenta.ui.viewmodel.MainViewModel
 import com.arnyminerz.filamagenta.utils.startAddToCalendar
@@ -87,22 +88,21 @@ fun EventScreen(
     val account by viewModel.accountData.observeAsState()
     val festerType = account?.type
 
-    val people by viewModel.people.observeAsState()
-    val tables by viewModel.tablesList.observeAsState()
     val table = account
         ?.id
         ?.let { accountId ->
-            Timber.i("Event id: ${event.id}. Tables: ${tables?.map { it.eventId }}")
-            tables?.find { it.eventId == event.id && (it.people.contains(accountId) || it.responsibleId == accountId) }
+            Timber.i("Event id: ${event.id}. Tables: ${event.tables}")
+            event.tables?.find { (it.members.contains(accountId) || it.responsibleId == accountId) }
         }
     val assistanceConfirmed =
-        table != null || account?.let { event.assistance.contains(it.id) } ?: false
+        table != null || account?.let { event.assistance?.contains(it.id) } ?: false
 
     var isCreatingTable by remember { mutableStateOf(false) }
     var isAddingToTable by remember { mutableStateOf(false) }
 
     if (showTableDialog)
         TableSelectionDialog(
+            event,
             viewModel,
             isAdding = isAddingToTable,
             isCreating = isCreatingTable,
@@ -117,12 +117,13 @@ fun EventScreen(
                     }
                 }
             },
-            onSelectTable = { tableEntity ->
-                if (account == null) scope.launch {
+            onSelectTable = { tableIndex ->
+                val tableEntity = event.tables?.get(tableIndex)
+                if (account == null || tableEntity == null) scope.launch {
                     snackbarHostState.showSnackbar(context.getString(R.string.toast_error_account_null))
                 } else {
                     isAddingToTable = true
-                    viewModel.addToTable(tableEntity, account!!).invokeOnCompletion {
+                    viewModel.addToTable(event, tableIndex, account!!).invokeOnCompletion {
                         isAddingToTable = false
                         showTableDialog = false
                     }
@@ -281,16 +282,20 @@ fun EventScreen(
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    ElevatedCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                    ) {
-                        TableMemberItem(table.responsibleId, people, account!!, true)
+                    val members by viewModel.getMembersData(table).observeAsState()
+                    if (members == null)
+                        LoadingIndicatorBox()
+                    else
+                        ElevatedCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                        ) {
+                            TableMemberItem(table.responsibleId, members, account!!, true)
 
-                        for (personId in table.people)
-                            TableMemberItem(personId, people, account!!)
-                    }
+                            for (personId in table.members)
+                                TableMemberItem(personId, members, account!!)
+                        }
                 }
 
             // MENU CARD
