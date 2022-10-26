@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,8 +38,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arnyminerz.filamagenta.R
+import com.arnyminerz.filamagenta.ui.backend.WindowSizeClass
+import com.arnyminerz.filamagenta.ui.backend.computeWindowSizeClasses
 import com.arnyminerz.filamagenta.ui.reusable.LoginField
-import com.arnyminerz.filamagenta.ui.theme.BoxWithLogo
 import com.arnyminerz.filamagenta.ui.theme.CardWithLogo
 import com.arnyminerz.filamagenta.ui.theme.JostFontFamily
 import com.arnyminerz.filamagenta.utils.isValidDNI
@@ -58,6 +59,7 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val size = computeWindowSizeClasses()
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -73,7 +75,19 @@ fun LoginScreen(
                 cardModifier = Modifier
                     .align(Alignment.Center)
                     .padding(paddingValues)
-                    .padding(horizontal = 12.dp, vertical = 32.dp),
+                    .padding(
+                        vertical = 32.dp,
+                    )
+                    .then(
+                        if (size == WindowSizeClass.EXPANDED)
+                            Modifier.width(500.dp)
+                        else
+                            Modifier
+                                .padding(
+                                    horizontal = 12.dp.takeIf { size == WindowSizeClass.COMPACT }
+                                        ?: 36.dp,
+                                )
+                    ),
                 contentModifier = Modifier,
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 5.dp,
