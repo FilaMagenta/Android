@@ -15,7 +15,7 @@ android {
         applicationId "com.arnyminerz.filamagenta"
         minSdk 21
         targetSdk 33
-        versionCode 1
+        versionCode findProperty("android.versionCode") as Integer
         versionName "1.0.0-alpha01"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -143,11 +143,26 @@ task updateLocalesConfig() {
             destXmlMkp.yield "\r\n"
 
             def locales = getLocales()
-            destXml."locale-config"(['xmlns:android':"http://schemas.android.com/apk/res/android"]) {
+            destXml."locale-config"(['xmlns:android': "http://schemas.android.com/apk/res/android"]) {
                 locales.forEach { locale ->
                     destXml."locale"("android:name": locale)
                 }
             }
+        }
+    }
+}
+
+android.applicationVariants.all { variant ->
+    if (variant.buildType.name == "release") {
+        variant.assemble.doLast {
+            // This increases version code on release
+            def versionPropsFile = file("../gradle.properties")
+            Properties versionProps = new Properties()
+            versionProps.load(new FileInputStream(versionPropsFile))
+            def code = versionProps['android.versionCode'].toInteger() + 1
+            versionProps['android.versionCode'] = code.toString()
+            versionProps.store(versionPropsFile.newWriter(), null)
+            logger.lifecycle("Increased version code to $code")
         }
     }
 }
