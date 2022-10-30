@@ -56,6 +56,7 @@ jobs:
         with:
           commit_message: ":robot: Commit Changes"
           file_pattern: "gradle.properties"
+          push_options: '--force'
       - name: 📦 Build AAB
         id: build_aab
         run: |
