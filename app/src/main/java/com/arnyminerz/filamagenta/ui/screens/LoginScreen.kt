@@ -45,6 +45,7 @@ import com.arnyminerz.filamagenta.ui.theme.CardWithLogo
 import com.arnyminerz.filamagenta.ui.theme.JostFontFamily
 import com.arnyminerz.filamagenta.utils.isValidDNI
 import kotlinx.coroutines.Job
+import timber.log.Timber
 
 @Preview(
     showSystemUi = true,
@@ -113,16 +114,19 @@ fun LoginScreen(
                             usernameError = context.getString(R.string.login_error_empty_username)
                         if (password.isEmpty())
                             passwordError = context.getString(R.string.login_error_empty_password)
-                        else if (!password.isValidDNI)
-                            passwordError = context.getString(R.string.login_error_invalid_password)
+                        else if (!username.isValidDNI)
+                            usernameError = context.getString(R.string.login_error_invalid_password)
 
-                        if (usernameError != null || passwordError != null)
-                            return
+                        if (usernameError != null || passwordError != null) {
+                            fieldsEnabled = true
+                            return Timber.w("Errors found. Won't login")
+                        }
 
                         keyboardController?.hide()
                         onLoginRequested
                             ?.invoke(username, password)
                             ?.invokeOnCompletion { fieldsEnabled = true }
+                            ?: Timber.w("No login requested callback given.")
                     } finally {
                         if (onLoginRequested == null)
                             fieldsEnabled = true

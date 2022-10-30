@@ -9,6 +9,7 @@ class AuthProvider: ContentProvider() {
     /*
      * Always return true, indicating that the
      * provider loaded correctly.
+     * TODO: Check connection to the server
      */
     override fun onCreate(): Boolean  = true
 

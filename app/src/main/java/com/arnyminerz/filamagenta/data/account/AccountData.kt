@@ -3,6 +3,7 @@ package com.arnyminerz.filamagenta.data.account
 import com.arnyminerz.filamagenta.utils.asStringList
 import com.arnyminerz.filamagenta.utils.getDate
 import com.arnyminerz.filamagenta.utils.getIntOrNull
+import com.arnyminerz.filamagenta.utils.getJSONArrayOrNull
 import com.arnyminerz.filamagenta.utils.getJSONObjectOrNull
 import com.arnyminerz.filamagenta.utils.getStringOrNull
 import com.arnyminerz.filamagenta.utils.putDate
@@ -54,9 +55,10 @@ data class AccountData(
             json.getJSONObject("wheel").getJSONObjectOrNull("blacks")?.serialize(Wheel.Companion),
             json.getIntOrNull("age"),
             json.getJSONObjectOrNull("trebuchet")?.serialize(TrebuchetData.Companion),
-            FesterType.valueOf(json.getInt("type")),
-            PaymentMethod.valueOf(json.getInt("payment")),
-            json.getJSONArray("permissions").asStringList.map { Permission.valueOf(it) },
+            FesterType.valueOf(json.getIntOrNull("type")),
+            PaymentMethod.valueOf(json.getIntOrNull("payment")),
+            json.getJSONArrayOrNull("permissions")?.asStringList?.map { Permission.valueOf(it) }
+                ?: emptyList(),
         )
     }
 

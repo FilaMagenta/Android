@@ -11,6 +11,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.android.volley.VolleyError
 import com.arnyminerz.filamagenta.R
 import com.arnyminerz.filamagenta.activity.MainActivity
 import com.arnyminerz.filamagenta.auth.AccountSingleton
@@ -157,19 +158,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             synchronizeEvents(token)
 
             ui { navController.navigate(MainActivity.Paths.Main) }
-        } catch (e: SQLException) {
+        } catch (e: VolleyError) {
             Timber.e(e, "Could not log in.")
 
-            if (e.message?.contains("network", true) == true) {
+            val code = e.networkResponse.statusCode
+            snackbarHostState.showSnackbar(
+                when (code) {
+                    403 -> getApplication<Application>().getString(R.string.toast_login_wrong_credentials)
+                    412 -> getApplication<Application>().getString(R.string.toast_login_max_attempts)
+                    else -> getApplication<Application>().getString(R.string.toast_error_unknown)
+                }
+            )
+
+            /*if (e is ConnectException) {
                 Timber.e(e, "No internet connection detected.")
 
                 snackbarHostState.showSnackbar(
                     getApplication<Application>().getString(R.string.toast_no_internet)
                 )
-            } else
-                snackbarHostState.showSnackbar(
-                    getApplication<Application>().getString(R.string.toast_error_unknown)
-                )
+            }*/
         }
     }
 

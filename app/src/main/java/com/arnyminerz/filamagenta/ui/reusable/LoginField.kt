@@ -2,7 +2,6 @@ package com.arnyminerz.filamagenta.ui.reusable
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateValueAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,14 +28,12 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.arnyminerz.filamagenta.R
 import com.arnyminerz.filamagenta.ui.theme.InterFontFamily
-import org.jetbrains.annotations.Nls.Capitalization
 
 @ExperimentalMaterial3Api
 @Composable
@@ -56,7 +53,7 @@ fun LoginField(
 
     OutlinedTextField(
         value = text,
-        onValueChange = { onTextChange(it.let { if (isPasswordField) it.uppercase() else it }) },
+        onValueChange = { onTextChange(it) },
         enabled = enabled,
         label = { Text(stringResource(label)) },
         supportingText = {
@@ -94,10 +91,6 @@ fun LoginField(
         keyboardOptions = KeyboardOptions(
             imeAction = if (actionNext) ImeAction.Next else ImeAction.Go,
             keyboardType = if (isPasswordField) KeyboardType.Password else KeyboardType.Text,
-            capitalization = if (isPasswordField)
-                KeyboardCapitalization.None
-            else
-                KeyboardCapitalization.Characters,
         ),
         keyboardActions = KeyboardActions(
             onGo = { onActionPerformed() },

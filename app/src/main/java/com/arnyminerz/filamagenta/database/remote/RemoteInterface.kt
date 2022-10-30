@@ -10,13 +10,16 @@ import com.arnyminerz.filamagenta.database.local.entity.EventEntity
 import com.arnyminerz.filamagenta.database.local.entity.ShortPersonData
 import com.arnyminerz.filamagenta.utils.serialize
 import com.arnyminerz.filamagenta.utils.throwUnless
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
 import org.json.JSONException
 import org.json.JSONObject
+import timber.log.Timber
 import java.io.IOException
 import java.net.URLEncoder
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 class RemoteInterface private constructor(context: Context) {
     companion object {
@@ -41,28 +44,37 @@ class RemoteInterface private constructor(context: Context) {
      * @since 20221025
      * @param url The URL to make the request to.
      * @param headers The headers to use to make the request.
+     * @param timeout The maximum amount of time to wait until a response is received. (millis)
      * @return The response parsed into a [JSONObject].
      * @throws JSONException If the response could not be parsed into JSON.
      * @throws IOException If there's an IO exception while making the request.
+     * @throws TimeoutCancellationException If the query was timed out.
      * @see tokenHeader
      */
     @WorkerThread
-    @Throws(JSONException::class, IOException::class)
-    private suspend fun query(url: String, headers: Map<String, String>? = null) =
-        suspendCoroutine { cont ->
-            val request = object : StringRequest(
-                Method.GET,
-                url,
-                { json -> cont.resume(JSONObject(json)) },
-                { cont.resumeWithException(it) },
-            ) {
-                override fun getHeaders(): MutableMap<String, String> {
-                    if (headers == null)
-                        return super.getHeaders()
-                    return headers.toMutableMap()
+    @Throws(JSONException::class, IOException::class, TimeoutCancellationException::class)
+    private suspend fun query(
+        url: String,
+        headers: Map<String, String>? = null,
+        timeout: Long = 10000
+    ) =
+        withTimeout(timeout) {
+            suspendCancellableCoroutine { cont ->
+                Timber.d("Making GET request to: $url. Headers: $headers")
+                val request = object : StringRequest(
+                    Method.GET,
+                    url,
+                    { json -> cont.resume(JSONObject(json)) },
+                    { cont.resumeWithException(it) },
+                ) {
+                    override fun getHeaders(): MutableMap<String, String> {
+                        if (headers == null)
+                            return super.getHeaders()
+                        return headers.toMutableMap()
+                    }
                 }
+                singleton.addToRequestQueue(request)
             }
-            singleton.addToRequestQueue(request)
         }
 
     /**
@@ -95,8 +107,8 @@ class RemoteInterface private constructor(context: Context) {
      * @return The correctly formatted url.
      */
     private fun buildV1Url(path: String, queryParams: Map<String, String>? = null) =
-        BuildConfig.REST_BASE + "/v1" + path + (queryParams?.let {
-            "?" + queryParams.toList().joinToString { (k, v) ->
+        "https://" + BuildConfig.REST_BASE + "/v1" + path + (queryParams?.let {
+            "?" + queryParams.toList().joinToString("&") { (k, v) ->
                 val key = URLEncoder.encode(k, Charsets.UTF_8.name())
                 val value = URLEncoder.encode(v, Charsets.UTF_8.name())
                 "$key=$value"
@@ -125,7 +137,7 @@ class RemoteInterface private constructor(context: Context) {
         checkSuccessful(response)
         checkData(response)
 
-        return response.getJSONObject("data").getString("auth-token")
+        return response.getJSONObject("data").getString("token")
     }
 
     /**

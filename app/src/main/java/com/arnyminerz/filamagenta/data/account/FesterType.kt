@@ -36,7 +36,7 @@ enum class FesterType(
     UNKNOWN(DB_TYPE_OTH, R.string.fester_type_unknown, Colors.Blue);
 
     companion object {
-        fun valueOf(dbType: Int) = values().find { it.dbType == dbType } ?: UNKNOWN
+        fun valueOf(dbType: Int?) = values().find { it.dbType == dbType } ?: UNKNOWN
 
         object Colors {
             // https://coolors.co/231f20-bb4430-7ebdc2-f3dfa2-efe6dd

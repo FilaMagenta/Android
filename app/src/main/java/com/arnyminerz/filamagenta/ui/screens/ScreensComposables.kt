@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -61,6 +60,7 @@ fun NavGraphBuilder.loginComposable(
         },
     ) {
         LoginScreen(snackbarHostState) { username, password ->
+            Timber.v("Logging in...")
             viewModel.tryToLogIn(navController, username, password, snackbarHostState)
         }
     }

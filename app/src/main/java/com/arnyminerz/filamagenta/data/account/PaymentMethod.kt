@@ -19,6 +19,6 @@ enum class PaymentMethod(val id: Int, @StringRes val localizedName: Int) {
     UNKNOWN(DB_TYPE_OTH, R.string.payment_method_unknown);
 
     companion object {
-        fun valueOf(dbType: Int) = values().find { it.id == dbType } ?: UNKNOWN
+        fun valueOf(dbType: Int?) = values().find { it.id == dbType } ?: UNKNOWN
     }
 }

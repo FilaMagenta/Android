@@ -33,32 +33,56 @@ fun JSONObject.getStrings(separator: CharSequence = ", ", vararg keys: String) =
 
 fun JSONObject.getStringOrNull(key: String): String? =
     if (has(key))
-        getString(key)
+        try {
+            getString(key)
+        } catch (e: JSONException) {
+            null
+        }
     else null
 
 fun JSONObject.getDateOrNull(key: String): Date? =
     if (has(key))
-        getDate(key)
+        try {
+            getDate(key)
+        } catch (e: JSONException) {
+            null
+        }
     else null
 
 fun JSONObject.getIntOrNull(key: String): Int? =
     if (has(key))
-        getInt(key)
+        try {
+            getInt(key)
+        } catch (e: JSONException) {
+            null
+        }
     else null
 
 fun JSONObject.getLongOrNull(key: String): Long? =
     if (has(key))
-        getLong(key)
+        try {
+            getLong(key)
+        } catch (e: JSONException) {
+            null
+        }
     else null
 
 fun JSONObject.getJSONObjectOrNull(key: String): JSONObject? =
     if (has(key))
-        getJSONObject(key)
+        try {
+            getJSONObject(key)
+        } catch (e: JSONException) {
+            null
+        }
     else null
 
 fun JSONObject.getJSONArrayOrNull(key: String): JSONArray? =
     if (has(key))
-        getJSONArray(key)
+        try {
+            getJSONArray(key)
+        } catch (e: JSONException) {
+            null
+        }
     else null
 
 @Throws(JSONException::class)
