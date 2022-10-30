@@ -76,6 +76,7 @@
 
     <string name="account_wheel_white">Whites Wheel Number</string>
     <string name="account_wheel_black">Blacks Wheel Number</string>
+    <string name="account_wheel_lock">Locked</string>
     <string name="account_antiquity">Antiquity</string>
 
     <string name="account_trebuchet">Trebuchet</string>
