@@ -104,7 +104,7 @@ fun EventScreen(
                     }
                 }
             },
-            onDismissRequest = { showPricesDialog = false },
+            onDismissRequest = { showTableDialog = false },
         )
     if (showConfirmAssistanceDialog)
         ConfirmAssistanceDialog(event.name, { showConfirmAssistanceDialog = false }) {
