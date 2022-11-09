@@ -12,15 +12,10 @@ import com.arnyminerz.filamagenta.data.event.Menu
 import com.arnyminerz.filamagenta.data.event.TableData
 import com.arnyminerz.filamagenta.database.local.AppDatabase
 import com.arnyminerz.filamagenta.database.remote.RemoteInterface
-import com.arnyminerz.filamagenta.utils.asLongList
-import com.arnyminerz.filamagenta.utils.getDate
-import com.arnyminerz.filamagenta.utils.getJSONArrayOrNull
-import com.arnyminerz.filamagenta.utils.getJSONObjectOrNull
-import com.arnyminerz.filamagenta.utils.getStringOrNull
-import com.arnyminerz.filamagenta.utils.serialize
+import com.arnyminerz.filamagenta.utils.*
 import com.arnyminerz.filamagenta.utils.serialize.JsonSerializer
 import org.json.JSONObject
-import java.util.Date
+import java.util.*
 
 @Entity(
     tableName = "events",
@@ -41,7 +36,7 @@ data class EventEntity(
             id = json.getLong("id"),
             name = json.getString("displayName"),
             date = json.getDate("date"),
-            menu = json.getJSONObjectOrNull("Menu")?.serialize(Menu.Companion),
+            menu = json.getJSONObjectOrNull("menu")?.serialize(Menu.Companion),
             contact = json.getStringOrNull("contact"),
             description = json.getStringOrNull("description"),
             assistance = json.getJSONArrayOrNull("attending")?.asLongList,
@@ -82,7 +77,7 @@ data class EventEntity(
     fun getPriceFor(festerType: FesterType) = if (menu == null)
         throw UnsupportedOperationException("Menu is null for event#$id")
     else
-        menu.price.let { price ->
+        menu.pricing.let { price ->
             price.toList().find { it.first == festerType }?.second ?: price[FesterType.UNKNOWN]
         }
 

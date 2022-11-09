@@ -2,6 +2,7 @@ package com.arnyminerz.filamagenta.database.remote
 
 import android.content.Context
 import androidx.annotation.WorkerThread
+import com.android.volley.VolleyLog
 import com.android.volley.toolbox.StringRequest
 import com.arnyminerz.filamagenta.BuildConfig
 import com.arnyminerz.filamagenta.auth.AccountSingleton
@@ -17,6 +18,8 @@ import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
 import java.io.IOException
+import java.io.UnsupportedEncodingException
+import java.net.URL
 import java.net.URLEncoder
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -57,25 +60,70 @@ class RemoteInterface private constructor(context: Context) {
         url: String,
         headers: Map<String, String>? = null,
         timeout: Long = 10000
-    ) =
-        withTimeout(timeout) {
-            suspendCancellableCoroutine { cont ->
-                Timber.d("Making GET request to: $url. Headers: $headers")
-                val request = object : StringRequest(
-                    Method.GET,
-                    url,
-                    { json -> cont.resume(JSONObject(json)) },
-                    { cont.resumeWithException(it) },
-                ) {
-                    override fun getHeaders(): MutableMap<String, String> {
-                        if (headers == null)
-                            return super.getHeaders()
-                        return headers.toMutableMap()
-                    }
+    ) = withTimeout(timeout) {
+        suspendCancellableCoroutine { cont ->
+            Timber.d("Making GET request to: $url. Headers: $headers")
+            val request = object : StringRequest(
+                Method.GET,
+                url,
+                { json -> cont.resume(JSONObject(json)) },
+                { cont.resumeWithException(it) },
+            ) {
+                override fun getHeaders(): MutableMap<String, String> {
+                    if (headers == null)
+                        return super.getHeaders()
+                    return headers.toMutableMap()
                 }
-                singleton.addToRequestQueue(request)
             }
+            singleton.addToRequestQueue(request)
         }
+    }
+
+    /**
+     * Makes a POST request to the given url.
+     * @author Arnau Mora
+     * @since 20221109
+     */
+    private suspend fun post(
+        url: String,
+        body: JSONObject? = null,
+        headers: Map<String, String>? = null,
+        timeout: Long = 10000,
+    ) = withTimeout(timeout) {
+        suspendCancellableCoroutine { cont ->
+            Timber.d("Making POST request to: $url. Headers: $headers. Body: $body")
+            val request = object : StringRequest(
+                Method.POST,
+                url,
+                { json -> cont.resume(JSONObject(json)) },
+                { cont.resumeWithException(it) },
+            ) {
+                override fun getHeaders(): MutableMap<String, String> {
+                    if (headers == null)
+                        return super.getHeaders()
+                    return headers.toMutableMap()
+                }
+
+                override fun getBodyContentType(): String =
+                    if (body == null)
+                        super.getBodyContentType()
+                    else
+                        "application/json; charset=utf-8"
+
+                override fun getBody(): ByteArray? = try {
+                    body?.toString()?.toByteArray()
+                } catch (e: UnsupportedEncodingException) {
+                    VolleyLog.wtf(
+                        "Unsupported Encoding while trying to get the bytes of %s using %s",
+                        body,
+                        "utf-8"
+                    )
+                    null
+                }
+            }
+            singleton.addToRequestQueue(request)
+        }
+    }
 
     /**
      * Checks that a given [JSONObject] contains a `success` field, and it's `true`.
@@ -106,14 +154,20 @@ class RemoteInterface private constructor(context: Context) {
      * @param queryParams If not null, some parameters to add at the end of the URL as query params.
      * @return The correctly formatted url.
      */
+    @Suppress("KotlinConstantConditions")
     private fun buildV1Url(path: String, queryParams: Map<String, String>? = null) =
-        "https://" + BuildConfig.REST_BASE + "/v1" + path + (queryParams?.let {
-            "?" + queryParams.toList().joinToString("&") { (k, v) ->
-                val key = URLEncoder.encode(k, Charsets.UTF_8.name())
-                val value = URLEncoder.encode(v, Charsets.UTF_8.name())
-                "$key=$value"
-            }
-        } ?: "")
+        URL(
+            BuildConfig.REST_PROTO.takeIf { it != "null" } ?: "https",
+            BuildConfig.REST_BASE,
+            BuildConfig.REST_PORT.takeIf { it != "null" }?.toInt() ?: 80,
+            "/v1$path" + (queryParams?.let {
+                "?" + queryParams.toList().joinToString("&") { (k, v) ->
+                    val key = URLEncoder.encode(k, Charsets.UTF_8.name())
+                    val value = URLEncoder.encode(v, Charsets.UTF_8.name())
+                    "$key=$value"
+                }
+            } ?: "")
+        ).toString()
 
     /**
      * Generates a map with the given token as the API-Key header.
@@ -131,9 +185,9 @@ class RemoteInterface private constructor(context: Context) {
     @WorkerThread
     @Throws(IllegalStateException::class)
     @Suppress("BlockingMethodInNonBlockingContext")
-    suspend fun logIn(dni: String, password: String): String {
-        val url = buildV1Url("/user/auth", mapOf("dni" to dni, "password" to password))
-        val response = query(url)
+    suspend fun logIn(nif: String, password: String): String {
+        val url = buildV1Url("/user/auth")
+        val response = post(url, JSONObject(mapOf("nif" to nif, "password" to password)))
         checkSuccessful(response)
         checkData(response)
 
@@ -145,10 +199,11 @@ class RemoteInterface private constructor(context: Context) {
      * @author Arnau Mora
      * @since 20221021
      * @param token The authentication token of the user.
+     * @throws JSONException If an error is thrown while parsing the response.
      * @return An [AccountData] instance with all the loaded data.
      */
     @WorkerThread
-    @Throws(IllegalStateException::class)
+    @Throws(IllegalStateException::class, JSONException::class)
     suspend fun getAccountData(token: String): AccountData {
         val response = query(
             buildV1Url("/user/data"),
@@ -157,7 +212,9 @@ class RemoteInterface private constructor(context: Context) {
         checkSuccessful(response)
         checkData(response)
 
-        return AccountData.fromJson(response.getJSONObject("data"))
+        val data = response.getJSONObject("data")
+        Timber.i("data: %s", data.toString())
+        return AccountData.fromRest(data)
     }
 
     /**

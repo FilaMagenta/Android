@@ -1,5 +1,6 @@
 package com.arnyminerz.filamagenta.ui.screens
 
+import android.os.Bundle
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
@@ -49,6 +50,7 @@ fun NavGraphBuilder.loginComposable(
     viewModel: MainViewModel,
     navController: NavController,
     snackbarHostState: SnackbarHostState,
+    extras: Bundle?,
 ) {
     composable(
         MainActivity.Paths.Login,
@@ -61,7 +63,13 @@ fun NavGraphBuilder.loginComposable(
     ) {
         LoginScreen(snackbarHostState) { username, password ->
             Timber.v("Logging in...")
-            viewModel.tryToLogIn(navController, username, password, snackbarHostState)
+            viewModel.tryToLogIn(
+                navController,
+                username,
+                password,
+                snackbarHostState,
+                true,
+            )
         }
     }
 }

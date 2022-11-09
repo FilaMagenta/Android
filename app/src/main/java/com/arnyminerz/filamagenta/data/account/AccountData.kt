@@ -1,32 +1,23 @@
 package com.arnyminerz.filamagenta.data.account
 
-import com.arnyminerz.filamagenta.utils.asStringList
-import com.arnyminerz.filamagenta.utils.getDate
-import com.arnyminerz.filamagenta.utils.getIntOrNull
-import com.arnyminerz.filamagenta.utils.getJSONArrayOrNull
-import com.arnyminerz.filamagenta.utils.getJSONObjectOrNull
-import com.arnyminerz.filamagenta.utils.getStringOrNull
-import com.arnyminerz.filamagenta.utils.putDate
-import com.arnyminerz.filamagenta.utils.serialize
+import com.arnyminerz.filamagenta.utils.*
 import com.arnyminerz.filamagenta.utils.serialize.JsonSerializable
 import com.arnyminerz.filamagenta.utils.serialize.JsonSerializer
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.Date
+import java.util.*
 
 data class AccountData(
     val id: Long,
     val name: String,
     val familyName: String,
-    val address: String,
-    val postalCode: Int,
-    val dni: String,
-    val born: Date,
-    val registrationDate: Date,
+    val address: String?,
+    val nif: String,
+    val born: Date?,
     val phone: String?,
     val workPhone: String?,
     val mobilePhone: String?,
-    val email: String,
+    val email: String?,
     val profileImage: String?,
     val whiteWheel: Wheel?,
     val blackWheel: Wheel?,
@@ -41,25 +32,61 @@ data class AccountData(
             json.getLong("id"),
             json.getString("name"),
             json.getString("familyName"),
-            json.getString("address"),
-            json.getInt("postalCode"),
-            json.getString("dni"),
+            json.getStringOrNull("address"),
+            json.getString("nif"),
             json.getDate("born"),
-            json.getDate("registration"),
             json.getStringOrNull("phone"),
             json.getStringOrNull("workPhone"),
             json.getStringOrNull("mobilePhone"),
-            json.getString("email"),
+            json.getStringOrNull("email"),
             json.getStringOrNull("profileImage"),
-            json.getJSONObject("wheel").getJSONObjectOrNull("whites")?.serialize(Wheel.Companion),
-            json.getJSONObject("wheel").getJSONObjectOrNull("blacks")?.serialize(Wheel.Companion),
+            json.getJSONObject("wheel").getJSONObject("whites").serialize(Wheel.Companion),
+            json.getJSONObject("wheel").getJSONObject("blacks").serialize(Wheel.Companion),
             json.getIntOrNull("age"),
             json.getJSONObjectOrNull("trebuchet")?.serialize(TrebuchetData.Companion),
-            FesterType.valueOf(json.getIntOrNull("type")),
+            FesterType.valueOf(json.getStringOrNull("type")),
             PaymentMethod.valueOf(json.getIntOrNull("payment")),
-            json.getJSONArrayOrNull("permissions")?.asStringList?.map { Permission.valueOf(it) }
-                ?: emptyList(),
+            json.getJSONArray("permissions").asStringList.map { Permission.valueOf(it) },
         )
+
+        fun fromRest(json: JSONObject): AccountData =
+            json.getJSONObject("vCard").let { vCard ->
+                val name = vCard.getJSONArray("name").asStringList
+                val telephones = vCard.getJSONArray("telephones")
+                    .map<JSONArray, Pair<String, String>> { it[0] as String to it[1] as String }
+                AccountData(
+                    json.getLong("Id"),
+                    name[0],
+                    name[1],
+                    vCard.getJSONArray("address").asStringList.joinToString(" "),
+                    json.getString("NIF"),
+                    vCard.getDateOrNull("birthday", DayDateFormat),
+                    // tele
+                    json.getStringOrNull("phone"),
+                    json.getStringOrNull("workPhone"),
+                    json.getStringOrNull("mobilePhone"),
+                    vCard.getString("email"),
+                    json.getStringOrNull("profileImage"),
+                    Wheel(
+                        json.getJSONObject("Grade").getBoolean("LockWhitesWheel"),
+                        json.getLong("WhitesWheelNumber"),
+                    ),
+                    Wheel(
+                        json.getJSONObject("Grade").getBoolean("LockBlacksWheel"),
+                        json.getLong("BlacksWheelNumber"),
+                    ),
+                    json.getIntOrNull("age"),
+                    json.getJSONObjectOrNull("trebuchet")?.serialize(TrebuchetData.Companion),
+                    FesterType.valueOf(json.getStringOrNull("type")),
+                    PaymentMethod.valueOf(json.getIntOrNull("payment")),
+                    json.getJSONArrayOrNull("permissions")?.asStringList?.map {
+                        Permission.valueOf(
+                            it
+                        )
+                    }
+                        ?: emptyList(),
+                )
+            }
     }
 
     override fun toJson(): JSONObject = JSONObject().apply {
@@ -67,10 +94,8 @@ data class AccountData(
         put("name", name)
         put("familyName", familyName)
         put("address", address)
-        put("postalCode", postalCode)
-        put("dni", dni)
+        put("nif", nif)
         putDate("born", born)
-        putDate("registration", registrationDate)
         put("phone", phone)
         put("workPhone", workPhone)
         put("mobilePhone", mobilePhone)
@@ -96,5 +121,6 @@ data class AccountData(
         return other.id == id
     }
 
-    fun hasPermission(permission: Permission): Boolean = permissions.find { it == permission } != null
+    fun hasPermission(permission: Permission): Boolean =
+        permissions.find { it == permission } != null
 }

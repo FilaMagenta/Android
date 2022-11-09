@@ -8,11 +8,13 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 private val JsonDateFormat: SimpleDateFormat
     get() = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+val DayDateFormat: SimpleDateFormat
+    get() = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
 
 @Throws(JSONException::class)
 fun JSONObject.putDate(key: String, date: Date?, format: SimpleDateFormat = JsonDateFormat) {
@@ -40,10 +42,10 @@ fun JSONObject.getStringOrNull(key: String): String? =
         }
     else null
 
-fun JSONObject.getDateOrNull(key: String): Date? =
+fun JSONObject.getDateOrNull(key: String, format: SimpleDateFormat = JsonDateFormat): Date? =
     if (has(key))
         try {
-            getDate(key)
+            getDate(key, format)
         } catch (e: JSONException) {
             null
         }
@@ -133,3 +135,8 @@ val JSONArray.asLongList: List<Long>
  */
 val JSONArray.objects: List<JSONObject>
     get() = (0 until length()).map { getJSONObject(it) }
+
+@Suppress("UNCHECKED_CAST")
+fun <T, R> JSONArray.map(iterator: (entry: T) -> R) = (0 until length())
+    .map { get(it) as T }
+    .map(iterator)

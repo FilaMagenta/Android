@@ -3,28 +3,27 @@ package com.arnyminerz.filamagenta.ui.viewmodel
 import android.accounts.Account
 import android.app.Activity
 import android.app.Application
+import android.os.Bundle
 import androidx.annotation.WorkerThread
 import androidx.compose.material3.SnackbarHostState
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.navigation.NavController
 import com.android.volley.VolleyError
 import com.arnyminerz.filamagenta.R
 import com.arnyminerz.filamagenta.activity.MainActivity
+import com.arnyminerz.filamagenta.activity.MainActivity.Companion.EXTRA_ACCOUNT_TYPE
 import com.arnyminerz.filamagenta.auth.AccountSingleton
+import com.arnyminerz.filamagenta.data.ACCOUNT_INDEX
 import com.arnyminerz.filamagenta.data.account.AccountData
 import com.arnyminerz.filamagenta.data.event.TableData
 import com.arnyminerz.filamagenta.database.local.AppDatabase
 import com.arnyminerz.filamagenta.database.local.entity.EventEntity
 import com.arnyminerz.filamagenta.database.local.entity.ShortPersonData
 import com.arnyminerz.filamagenta.database.remote.RemoteInterface
-import com.arnyminerz.filamagenta.utils.launchIO
-import com.arnyminerz.filamagenta.utils.ui
+import com.arnyminerz.filamagenta.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.json.JSONException
 import timber.log.Timber
 import java.sql.SQLException
 
@@ -59,7 +58,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * @author Arnau Mora
      * @since 20221016
      */
-    val selectedAccountIndex = MutableLiveData(0)
+    val selectedAccountIndex = application.getIntPreferences(ACCOUNT_INDEX).asLiveData()
 
     /**
      * Maps [accountsList] to [selectedAccountIndex] and returns a [LiveData] that gets the currently
@@ -96,7 +95,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * @param navController The nav controller to update when finished loading.
      */
     @Throws(SQLException::class)
-    fun load(navController: NavController, force: Boolean = false) =
+    fun load(navController: NavController, extras: Bundle?, force: Boolean = false) =
         viewModelScope.launch(Dispatchers.IO) {
             if (!force && !accountsList.value.isNullOrEmpty())
                 return@launch Timber.d("Not loading since data already present.")
@@ -115,15 +114,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             navController.popBackStack(MainActivity.Paths.Error, true)
                         else
                             throw e
+                    } catch (e: IllegalStateException) {
+                        Timber.w(e, "Got invalid event.")
                     }
                 }
                 .also {
-                    Timber.d("Finished loading data. Navigating...")
+                    Timber.d(
+                        "Finished loading data. Extras: %s. Accounts count: %d",
+                        extras?.toMap(),
+                        it.size,
+                    )
                     ui {
-                        if (it.isNotEmpty())
-                            navController.navigate(MainActivity.Paths.Main)
-                        else
+                        if (it.isEmpty() || extras?.containsKey(EXTRA_ACCOUNT_TYPE) == true)
                             navController.navigate(MainActivity.Paths.Login)
+                        else
+                            navController.navigate(MainActivity.Paths.Main)
                     }
                 }
         }
@@ -133,7 +138,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         navController: NavController,
         dni: String,
         password: String,
-        snackbarHostState: SnackbarHostState
+        snackbarHostState: SnackbarHostState,
+        addingNewAccount: Boolean,
     ) = launchIO {
         try {
             val token = remote.logIn(dni, password)
@@ -147,24 +153,34 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }*/
             val accountData = remote.getAccountData(token)
 
-            val accountAdded = accountSingleton.addAccount(
-                accountData,
-                password,
-                token,
-            )
-            if (!accountAdded)
-                return@launchIO Timber.e("Could not add account. Unknown error.")
+            if (addingNewAccount) {
+                Timber.i("Adding new account (%s).", accountData.username)
+                val accountAdded = accountSingleton.addAccount(
+                    accountData,
+                    password,
+                    token,
+                )
+                if (!accountAdded)
+                    return@launchIO Timber.e("Could not add account. Unknown error.")
+            } else
+                accountSingleton.setPassword(accountData, password)
 
             synchronizeEvents(token)
 
             ui { navController.navigate(MainActivity.Paths.Main) }
         } catch (e: VolleyError) {
-            Timber.e(e, "Could not log in.")
+            Timber.e(
+                e,
+                "Could not log in. Response (%d): %s",
+                e.networkResponse?.statusCode ?: -1,
+                e.networkResponse?.data?.toString(Charsets.UTF_8) ?: "N/A",
+            )
 
-            val code = e.networkResponse.statusCode
+            val code = e.networkResponse?.statusCode
             snackbarHostState.showSnackbar(
                 when (code) {
                     403 -> getApplication<Application>().getString(R.string.toast_login_wrong_credentials)
+                    404 -> getApplication<Application>().getString(R.string.toast_login_not_found)
                     412 -> getApplication<Application>().getString(R.string.toast_login_max_attempts)
                     else -> getApplication<Application>().getString(R.string.toast_error_unknown)
                 }
@@ -177,6 +193,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     getApplication<Application>().getString(R.string.toast_no_internet)
                 )
             }*/
+        } catch (e: JSONException) {
+            Timber.e(e, "Could not parse response.")
+            snackbarHostState.showSnackbar(
+                getApplication<Application>().getString(R.string.toast_error_unknown)
+            )
+        } catch (e: IllegalStateException) {
+            Timber.w(e, "Got invalid event.")
         }
     }
 
@@ -196,8 +219,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun findAccountDataByName(name: String) =
         accountSingleton.getAccounts()
-            .map { accountSingleton.getUserData(it) }
-            .find { it.username == name }
+            .find { it.name == name }
+            ?.let { accountSingleton.getUserData(it) }
+            .also { if (it == null) Timber.d("Could not find an account named '%s'", name) }
 
     fun getAssistanceData(event: EventEntity): MutableLiveData<List<ShortPersonData>> =
         MutableLiveData<List<ShortPersonData>>().also {
@@ -226,7 +250,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * @throws SQLException If there's an error while running the SQL query.
      */
     @WorkerThread
-    @Throws(SQLException::class)
+    @Throws(SQLException::class, IllegalStateException::class)
     private suspend fun fetchEvents(token: String): List<EventEntity> = remote.getEvents(token)
 
     /**
@@ -236,7 +260,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * @throws SQLException If there's an error while running the SQL query.
      */
     @WorkerThread
-    @Throws(SQLException::class)
+    @Throws(SQLException::class, IllegalStateException::class)
     suspend fun synchronizeEvents(token: String) {
         val dao = appDatabase.eventsDao()
         val local = dao.getAll()
@@ -244,10 +268,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val events = fetchEvents(token)
         // Add new events to the local database
         events.forEach { event ->
-            val found = local.find { it.hashCode() == event.hashCode() } != null
-            val isAnUpdate = found && local.find { it.id == event.id } != null
+            val found = local.find { it.hashCode() == event.hashCode() }
+            val isAnUpdate = local.find { it.id == event.id } != null
 
-            if (!found) {
+            if (found == null && !isAnUpdate) {
                 Timber.v("Storing event#${event.id}...")
                 dao.add(event)
             } else if (isAnUpdate) {
@@ -257,7 +281,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
         // Remove non-existing events
         local.forEach { event ->
-            val found = events.find { it.hashCode() == event.hashCode() }
+            val found = events.find { it.id == event.id }
             // If not found on the remote, remove it
             if (found == null) {
                 Timber.v("Removing event#${event.id}...")

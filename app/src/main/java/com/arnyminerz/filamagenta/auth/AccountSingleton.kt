@@ -14,13 +14,12 @@ import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.arnyminerz.filamagenta.BuildConfig
+import com.arnyminerz.filamagenta.BuildConfig.ACCOUNT_TYPE
 import com.arnyminerz.filamagenta.data.account.AccountData
 import com.arnyminerz.filamagenta.utils.json
 import com.arnyminerz.filamagenta.utils.putJson
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
-
-private const val ACCOUNT_TYPE = "fila_magenta"
 
 /**
  * Used for managing the state of the authenticated user.
@@ -109,7 +108,7 @@ class AccountSingleton private constructor(context: Context) {
      */
     @WorkerThread
     fun addAccount(accountData: AccountData, password: String, token: String): Boolean {
-        val account = Account(accountData.username, ACCOUNT_TYPE)
+        val account = Account(accountData.nif, ACCOUNT_TYPE)
         val success = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             accountManager.addAccountExplicitly(
                 account,
@@ -132,6 +131,10 @@ class AccountSingleton private constructor(context: Context) {
         accountManager.setAuthToken(account, BuildConfig.AUTH_TOKEN_TYPE, token)
         return true
     }
+
+    @WorkerThread
+    fun setPassword(accountData: AccountData, password: String) =
+        accountManager.setPassword(Account(accountData.nif, ACCOUNT_TYPE), password)
 
     /**
      * Removes the specified account.

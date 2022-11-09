@@ -20,3 +20,7 @@ suspend fun io(@MainThread block: suspend CoroutineScope.() -> Unit) =
 
 fun ViewModel.launchIO(@WorkerThread block: suspend CoroutineScope.() -> Unit) =
     viewModelScope.launch(Dispatchers.IO, block = block)
+
+fun <T, R> T.runBlocking(@WorkerThread block: suspend CoroutineScope.(it: T) -> R) = let {
+    kotlinx.coroutines.runBlocking { block(it) }
+}
