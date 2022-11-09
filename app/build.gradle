@@ -37,6 +37,8 @@ android {
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
         buildConfigField "String", "REST_BASE", '"' + properties.getProperty("REST_BASE") + '"'
+        buildConfigField "String", "REST_PROTO", '"' + properties.getProperty("REST_PROTO") + '"'
+        buildConfigField "String", "REST_PORT", '"' + properties.getProperty("REST_PORT") + '"'
 
         javaCompileOptions {
             annotationProcessorOptions {
