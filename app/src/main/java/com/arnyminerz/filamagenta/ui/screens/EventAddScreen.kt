@@ -8,10 +8,14 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Coffee
@@ -19,7 +23,9 @@ import androidx.compose.material.icons.outlined.EmojiFoodBeverage
 import androidx.compose.material.icons.outlined.LocalDrink
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ChevronLeft
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.EuroSymbol
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -38,16 +44,20 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arnyminerz.filamagenta.R
 import com.arnyminerz.filamagenta.activity.MainActivity
+import com.arnyminerz.filamagenta.data.account.FesterType
 import com.arnyminerz.filamagenta.data.event.EventType
 import com.arnyminerz.filamagenta.ui.reusable.LabeledTextField
 import com.vanpra.composematerialdialogs.MaterialDialog
@@ -108,7 +118,8 @@ fun MainActivity.EventAddScreen() {
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.ime,
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -186,8 +197,12 @@ fun MainActivity.EventAddScreen() {
                     var drinksIncluded by remember { mutableStateOf(false) }
                     var coffeeIncluded by remember { mutableStateOf(false) }
                     var teaIncluded by remember { mutableStateOf(false) }
+                    val pricing = remember { mutableStateMapOf<FesterType, Double>() }
+                    var currentType by remember { mutableStateOf(FesterType.OTHER) }
+                    var currentPrice by remember { mutableStateOf("") }
 
-                    Divider()
+                    Divider(Modifier.padding(vertical = 8.dp))
+
                     Text(
                         stringResource(R.string.event_new_section_menu),
                         modifier = Modifier
@@ -253,6 +268,116 @@ fun MainActivity.EventAddScreen() {
                         titleRes = R.string.event_new_section_menu_dessert,
                         plates = desserts,
                     )
+
+                    Divider(Modifier.padding(vertical = 8.dp))
+
+                    // PRICING
+                    Text(
+                        stringResource(R.string.event_new_section_pricing),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    ElevatedCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .padding(bottom = 16.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1.3f),
+                            ) {
+                                var showingTypeDropdown by remember { mutableStateOf(false) }
+                                LabeledTextField(
+                                    value = stringResource(currentType.localizedName),
+                                    label = R.string.event_new_pricing_type,
+                                    isDisabled = true,
+                                    modifier = Modifier
+                                        .clickable { showingTypeDropdown = true },
+                                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                                        disabledBorderColor = MaterialTheme.colorScheme.onBackground,
+                                        disabledTextColor = MaterialTheme.colorScheme.onBackground,
+                                        disabledLabelColor = MaterialTheme.colorScheme.onBackground,
+                                    ),
+                                )
+                                DropdownMenu(
+                                    expanded = showingTypeDropdown,
+                                    onDismissRequest = { showingTypeDropdown = false },
+                                ) {
+                                    for (t in FesterType.values())
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(t.localizedName)) },
+                                            onClick = {
+                                                currentType = t; showingTypeDropdown = false
+                                            },
+                                            enabled = !pricing.containsKey(t),
+                                        )
+                                }
+                            }
+                            fun newRow() {
+                                if (currentPrice.toDoubleOrNull() == null) return
+
+                                pricing[currentType] = currentPrice.toDouble()
+                                currentType = FesterType.values()
+                                    .find { !pricing.containsKey(it) }
+                                    ?: FesterType.OTHER
+                                currentPrice = ""
+                            }
+                            LabeledTextField(
+                                value = currentPrice,
+                                label = R.string.event_new_pricing_price,
+                                onValueChange = {
+                                    if (it.toDoubleOrNull() != null)
+                                        currentPrice = it
+                                },
+                                modifier = Modifier
+                                    .weight(1f),
+                                trailing = {
+                                    Icon(
+                                        Icons.Rounded.EuroSymbol,
+                                        stringResource(R.string.event_new_pricing_price),
+                                    )
+                                },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onDone = { newRow() },
+                                ),
+                            )
+                            IconButton(
+                                onClick = { newRow() },
+                                enabled = currentPrice.toDoubleOrNull() != null,
+                            ) {
+                                Icon(Icons.Rounded.ChevronRight, "")
+                            }
+                        }
+                        for ((t, price) in pricing)
+                            ListItem(
+                                headlineText = { Text(stringResource(t.localizedName)) },
+                                supportingText = {
+                                    Text(
+                                        price.takeIf { it > 0 }
+                                            ?.toString()
+                                            ?: stringResource(R.string.event_price_included),
+                                    )
+                                },
+                                trailingContent = {
+                                    IconButton(onClick = { pricing.remove(t) }) {
+                                        Icon(
+                                            Icons.Rounded.Close,
+                                            stringResource(R.string.image_desc_remove),
+                                        )
+                                    }
+                                },
+                            )
+                    }
                 }
             }
         }
@@ -272,7 +397,7 @@ fun MenuPartCard(@StringRes titleRes: Int, plates: SnapshotStateList<String>) {
             stringResource(titleRes),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp),
+                .padding(start = 8.dp, top = 8.dp, end = 8.dp),
             style = MaterialTheme.typography.titleSmall,
         )
         LabeledTextField(
