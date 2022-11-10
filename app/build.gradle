@@ -5,6 +5,8 @@ plugins {
     id 'com.google.devtools.ksp'
     id 'io.gitlab.arturbosch.detekt'
     id 'org.jetbrains.dokka'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -67,6 +69,12 @@ android {
             minifyEnabled false
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled true
+            firebaseCrashlytics {
+                mappingFileUploadEnabled false
+            }
         }
     }
     compileOptions {
@@ -249,6 +257,13 @@ dependencies {
 
     // Volley for http requests
     implementation 'com.android.volley:volley:1.2.1'
+
+    // Firebase
+    implementation platform('com.google.firebase:firebase-bom:31.0.2')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-perf-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx'
 
     // Core desugaring. Note: 2.0.0 requires AGP >=7.4.0-alpha10
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.0'

@@ -19,3 +19,8 @@ fun Context.getIntPreferences(key: Preferences.Key<Int>, default: Int = 0): Flow
     dataStore
         .data
         .map { it[key] ?: default }
+
+fun Context.getBooleanPreferences(key: Preferences.Key<Boolean>, default: Boolean): Flow<Boolean> =
+    dataStore
+        .data
+        .map { it[key] ?: default }

@@ -2,6 +2,7 @@ package com.arnyminerz.filamagenta.ui.screens
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -31,6 +32,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -97,7 +99,30 @@ fun MainActivity.EventAddScreen() {
         },
     ) { timepicker(time, is24HourClock = true) { time = it } }
 
+    var name by remember { mutableStateOf("") }
     var type by remember { mutableStateOf(EventType.GENERIC) }
+    var fabVisible by remember { mutableStateOf(false) }
+
+    // Eat event
+    val starters = remember { mutableStateListOf<String>() }
+    val firsts = remember { mutableStateListOf<String>() }
+    val seconds = remember { mutableStateListOf<String>() }
+    val desserts = remember { mutableStateListOf<String>() }
+    var drinksIncluded by remember { mutableStateOf(false) }
+    var coffeeIncluded by remember { mutableStateOf(false) }
+    var teaIncluded by remember { mutableStateOf(false) }
+    val pricing = remember { mutableStateMapOf<FesterType, Double>() }
+
+    fun checkVisibility() {
+        fabVisible = name.isNotBlank() && (type.takeIf { it == EventType.EAT }?.let {
+            listOf(
+                starters,
+                firsts,
+                seconds,
+                desserts
+            ).any { it.isNotEmpty() } && pricing.isNotEmpty()
+        } ?: true)
+    }
 
     Scaffold(
         topBar = {
@@ -119,6 +144,19 @@ fun MainActivity.EventAddScreen() {
                 ),
             )
         },
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = fabVisible,
+                enter = slideInVertically(initialOffsetY = { 1000 }),
+            ) {
+                ExtendedFloatingActionButton(
+                    onClick = { /*TODO*/ },
+                ) {
+                    Icon(Icons.Rounded.Add, stringResource(R.string.event_new_create))
+                    Text(stringResource(R.string.event_new_create))
+                }
+            }
+        },
         contentWindowInsets = WindowInsets.ime,
     ) { paddingValues ->
         Column(
@@ -126,10 +164,9 @@ fun MainActivity.EventAddScreen() {
                 .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = (if (fabVisible) 92 else 16).dp),
         ) {
-            var name by remember { mutableStateOf("") }
-
             Text(
                 stringResource(R.string.event_new_description),
                 modifier = Modifier
@@ -148,7 +185,7 @@ fun MainActivity.EventAddScreen() {
                 value = name,
                 label = R.string.event_new_name,
                 supportingTextRes = R.string.event_new_name_description,
-                onValueChange = { name = it },
+                onValueChange = { name = it; checkVisibility() },
             )
             LabeledTextField(
                 value = date.format(DateTimeFormatter.ISO_DATE) + " " +
@@ -184,20 +221,15 @@ fun MainActivity.EventAddScreen() {
                     for (t in EventType.values())
                         DropdownMenuItem(
                             text = { Text(stringResource(t.localizedName)) },
-                            onClick = { type = t; showingTypeDropdown = false },
+                            onClick = { type = t; showingTypeDropdown = false; checkVisibility() },
                         )
                 }
             }
             AnimatedVisibility(visible = type == EventType.EAT) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    val starters = remember { mutableStateListOf<String>() }
-                    val firsts = remember { mutableStateListOf<String>() }
-                    val seconds = remember { mutableStateListOf<String>() }
-                    val desserts = remember { mutableStateListOf<String>() }
-                    var drinksIncluded by remember { mutableStateOf(false) }
-                    var coffeeIncluded by remember { mutableStateOf(false) }
-                    var teaIncluded by remember { mutableStateOf(false) }
-                    val pricing = remember { mutableStateMapOf<FesterType, Double>() }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                ) {
                     var currentType by remember { mutableStateOf(FesterType.OTHER) }
                     var currentPrice by remember { mutableStateOf("") }
 
@@ -282,8 +314,7 @@ fun MainActivity.EventAddScreen() {
                     ElevatedCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
-                            .padding(bottom = 16.dp),
+                            .padding(8.dp),
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),

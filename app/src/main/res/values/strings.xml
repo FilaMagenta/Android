@@ -92,6 +92,14 @@
     <string name="settings_language_title">Language</string>
     <string name="settings_language_summary">Change the display language of the app</string>
     <string name="settings_language_dialog_title">Language</string>
+    <string name="settings_category_advanced">Advanced</string>
+    <string name="settings_collect_error_title">Collect error reports</string>
+    <string name="settings_collect_error_summary">If enabled, anonymous error reports are recollected and sent to the developers for being analyzed and solved as soon as possible.</string>
+    <string name="settings_collect_analytics_title">Collect analytics</string>
+    <string name="settings_collect_analytics_summary">If enabled, anonymous analytics such as activity and performance of the app will be sent to the developers. This way the app can keep evolving, and problems can be detected sooner.</string>
+
+    <string name="permission_notifications_title">Notifications permission</string>
+    <string name="permission_notifications_message">Since Android 13, explicit permission is required in order to receive notifications. Please, grant the permission, or you won\'t receive any notification.</string>
 
     <string name="event_confirm_action">Confirm Assistance</string>
     <string name="event_confirmed">Assistance Confirmed</string>
@@ -131,6 +139,10 @@
     <string name="event_new_name_description">This is a descriptive name for the event. If it\'s a recurring event, such as "Mig Any", we recommend adding the year at the end ("Mig Any 2022").</string>
     <string name="event_new_date">Event Date</string>
     <string name="event_new_type">Event Type</string>
+    <string name="event_new_section_pricing">Pricing</string>
+    <string name="event_new_pricing_type">Type</string>
+    <string name="event_new_pricing_price">Price</string>
+    <string name="event_new_create">Create Event</string>
 
     <string name="fester_type_alevin">Fry</string>
     <string name="fester_type_infantil">Children</string>
@@ -143,7 +155,7 @@
     <string name="fester_type_sit_esp_estudis">Special Situation for Studies</string>
     <string name="fester_type_colaborador_pack">Contributor with Pack</string>
     <string name="fester_type_jubilat_pack">Retired with Pack</string>
-    <string name="fester_type_unknown">Unknown</string>
+    <string name="fester_type_other">Other</string>
     <string name="fester_type_external">External</string>
 
     <string name="payment_method_transferencia">Transfer</string>
@@ -156,4 +168,7 @@
     <string name="event_type_generic">Generic</string>
     <string name="event_type_eat">Eat</string>
     <string name="event_type_entradeta">Entradeta</string>
+
+    <string name="notification_channel_alerts_name">Alerts</string>
+    <string name="notification_channel_alerts_desc">Notifications sent by the Filà to notify about new things.</string>
 </resources>

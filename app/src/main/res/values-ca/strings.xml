@@ -84,7 +84,7 @@
     <string name="fester_type_sit_esp_estudis">Situació Especial Estudiants</string>
     <string name="fester_type_colaborador_pack">Col·laborador amb Pack</string>
     <string name="fester_type_jubilat_pack">Jubilat amb Pack</string>
-    <string name="fester_type_unknown">Desconegut</string>
+    <string name="fester_type_other">Desconegut</string>
     <string name="fester_type_external">Extern</string>
     <string name="payment_method_transferencia">Transferència</string>
     <string name="payment_method_remesa">Remesa</string>
@@ -131,4 +131,8 @@
     <string name="event_type_eat">Menjar</string>
     <string name="event_type_entradeta">Entradeta</string>
     <string name="event_new_menu_tea_included">Té i infussions incl.</string>
+    <string name="event_new_section_pricing">Preus</string>
+    <string name="event_new_pricing_type">Grup</string>
+    <string name="event_new_pricing_price">Preu</string>
+    <string name="event_new_create">Crear Esdeveniment</string>
 </resources>
