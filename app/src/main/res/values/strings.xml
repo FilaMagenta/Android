@@ -123,8 +123,9 @@
     <string name="event_new_section_menu_seconds">Seconds</string>
     <string name="event_new_section_menu_dessert">Dessert</string>
     <string name="event_new_menu_plate_name">Plate Name</string>
-    <string name="event_new_menu_drink_included">Drinks included</string>
-    <string name="event_new_menu_coffee_included">Coffee included</string>
+    <string name="event_new_menu_drink_included">Drinks incl.</string>
+    <string name="event_new_menu_coffee_included">Coffee incl.</string>
+    <string name="event_new_menu_tea_included">Tea and infusions incl.</string>
     <string name="event_new_description">The event you create will be shown to everybody as soon as you click create. Please, be careful and introduce all the information correctly.</string>
     <string name="event_new_name">Event Name</string>
     <string name="event_new_name_description">This is a descriptive name for the event. If it\'s a recurring event, such as "Mig Any", we recommend adding the year at the end ("Mig Any 2022").</string>
