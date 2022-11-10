@@ -70,7 +70,7 @@ data class AccountData(
                     telephones["work"],
                     telephones["cell"],
                     vCard.getString("email"),
-                    json.getStringOrNull("profileImage"),
+                    vCard.getStringOrNull("photo"),
                     Wheel(
                         json.getJSONObject("Grade").getBoolean("LockWhitesWheel"),
                         json.getLong("WhitesWheelNumber"),
@@ -84,11 +84,9 @@ data class AccountData(
                     json.getJSONObjectOrNull("trebuchet")?.serialize(TrebuchetData.Companion),
                     FesterType.valueOf(json.getStringOrNull("type")),
                     PaymentMethod.valueOf(json.getIntOrNull("payment")),
-                    json.getJSONArrayOrNull("permissions")?.asStringList?.map {
-                        Permission.valueOf(
-                            it
-                        )
-                    }
+                    json.getJSONArrayOrNull("permissions")
+                        ?.asStringList
+                        ?.map { Permission.valueOf(it) }
                         ?: emptyList(),
                 )
             }
