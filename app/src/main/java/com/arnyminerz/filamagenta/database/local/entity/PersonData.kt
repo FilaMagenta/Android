@@ -14,7 +14,6 @@ import com.arnyminerz.filamagenta.utils.asStringList
 import com.arnyminerz.filamagenta.utils.getDate
 import com.arnyminerz.filamagenta.utils.getDateOrNull
 import com.arnyminerz.filamagenta.utils.getIntOrNull
-import com.arnyminerz.filamagenta.utils.getJSONArrayOrNull
 import com.arnyminerz.filamagenta.utils.getJSONObject
 import com.arnyminerz.filamagenta.utils.getJSONObjectOrNull
 import com.arnyminerz.filamagenta.utils.getStringOrNull
@@ -108,10 +107,11 @@ data class PersonData(
                     json.getJSONObjectOrNull("trebuchet")?.serialize(TrebuchetData.Companion),
                     FesterType.valueOf(grade.getStringOrNull("DisplayName")),
                     PaymentMethod.valueOf(json.getIntOrNull("payment")),
-                    json.getJSONArrayOrNull("permissions")
-                        ?.asStringList
-                        ?.map { Permission.valueOf(it) }
-                        ?: emptyList(),
+                    json.getJSONObject("Role")
+                        .getJSONArray("Permissions")
+                        .asStringList
+                        .map { it.uppercase() }
+                        .map { Permission.valueOf(it) },
                 )
             }
     }
