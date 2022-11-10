@@ -256,6 +256,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 )
             }
         }
+
+    fun getResponsibleData(tableData: TableData): MutableLiveData<ShortPersonData> =
+        MutableLiveData<ShortPersonData>().also {
+            launchIO {
+                it.postValue(
+                    tableData.getResponsibleData(getApplication(), selectedAccountIndex.value ?: 0)
+                )
+            }
+        }
     //</editor-fold>
 
     /**

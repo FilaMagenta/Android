@@ -27,6 +27,13 @@ data class TableData(
     }
 
     @WorkerThread
+    suspend fun getResponsibleData(context: Context, accountIndex: Int) =
+        AppDatabase.getInstance(context)
+            .peopleDao()
+            .getById(responsibleId)
+            ?: RemoteInterface.getInstance(context).getAccountData(responsibleId, accountIndex)
+
+    @WorkerThread
     suspend fun getMembersData(context: Context, accountIndex: Int) = members.map { userId ->
         AppDatabase.getInstance(context)
             .peopleDao()
