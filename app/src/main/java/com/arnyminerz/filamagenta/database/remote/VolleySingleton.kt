@@ -4,6 +4,7 @@ import android.content.Context
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.Volley
+import java.util.UUID
 
 class VolleySingleton private constructor(context: Context) {
     companion object {
@@ -24,7 +25,14 @@ class VolleySingleton private constructor(context: Context) {
         Volley.newRequestQueue(context.applicationContext)
     }
 
-    fun <T> addToRequestQueue(req: Request<T>) {
+    fun <T> addToRequestQueue(req: Request<T>): UUID {
+        val uuid = UUID.randomUUID()
+        req.tag = uuid.toString()
+
         requestQueue.add(req)
+
+        return uuid
     }
+
+    fun cancel(uuid: UUID) = requestQueue.cancelAll(uuid.toString())
 }
