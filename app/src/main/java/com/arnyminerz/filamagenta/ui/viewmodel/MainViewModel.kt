@@ -9,6 +9,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.*
 import androidx.navigation.NavController
+import com.android.volley.NoConnectionError
 import com.android.volley.VolleyError
 import com.arnyminerz.filamagenta.App
 import com.arnyminerz.filamagenta.R
@@ -180,14 +181,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             )
 
             val code = e.networkResponse?.statusCode
-            snackbarHostState.showSnackbar(
-                when (code) {
-                    403 -> getApplication<Application>().getString(R.string.toast_login_wrong_credentials)
-                    404 -> getApplication<Application>().getString(R.string.toast_login_not_found)
-                    412 -> getApplication<Application>().getString(R.string.toast_login_max_attempts)
-                    else -> getApplication<Application>().getString(R.string.toast_error_unknown)
-                }
+            val msg = getApplication<Application>().getString(
+                if (e is NoConnectionError)
+                    R.string.toast_login_server
+                else
+                    when (code) {
+                        403 -> R.string.toast_login_wrong_credentials
+                        404 -> R.string.toast_login_not_found
+                        412 -> R.string.toast_login_max_attempts
+                        else -> R.string.toast_error_unknown
+                    }
             )
+            snackbarHostState.showSnackbar(msg)
 
             /*if (e is ConnectException) {
                 Timber.e(e, "No internet connection detected.")
