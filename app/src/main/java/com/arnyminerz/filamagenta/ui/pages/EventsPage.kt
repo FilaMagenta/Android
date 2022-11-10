@@ -11,6 +11,9 @@ import com.arnyminerz.filamagenta.activity.MainActivity
 import com.arnyminerz.filamagenta.database.local.entity.assists
 import com.arnyminerz.filamagenta.ui.reusable.EventCard
 import com.arnyminerz.filamagenta.ui.reusable.LoadingIndicatorBox
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun MainActivity.EventsPage() {
@@ -25,7 +28,15 @@ fun MainActivity.EventsPage() {
             modifier = Modifier
                 .fillMaxSize(),
         ) {
-            items(events.sortedBy { it.date.time }) { event ->
+            items(
+                events
+                    .filter {
+                        SimpleDateFormat("yyyyMMdd", Locale.getDefault()).let { sdf ->
+                            sdf.parse(sdf.format(it.date))
+                        }?.after(Date()) ?: true
+                    }
+                    .sortedBy { it.date.time }
+            ) { event ->
                 val assistanceConfirmed = events.assists(account!!.id)
                 EventCard(
                     event = event,
