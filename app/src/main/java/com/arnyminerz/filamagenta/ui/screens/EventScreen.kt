@@ -86,7 +86,7 @@ fun EventScreen(
                     snackbarHostState.showSnackbar(context.getString(R.string.toast_error_account_null))
                 } else {
                     isCreatingTable = true
-                    viewModel.createNewTable(account!!, event).invokeOnCompletion {
+                    viewModel.createNewTable(event).invokeOnCompletion {
                         isCreatingTable = false
                         showTableDialog = false
                     }
@@ -98,7 +98,7 @@ fun EventScreen(
                     snackbarHostState.showSnackbar(context.getString(R.string.toast_error_account_null))
                 } else {
                     isAddingToTable = true
-                    viewModel.addToTable(event, tableIndex, account!!).invokeOnCompletion {
+                    viewModel.addToTable(event, tableIndex).invokeOnCompletion {
                         isAddingToTable = false
                         showTableDialog = false
                     }
@@ -111,7 +111,7 @@ fun EventScreen(
             if (account == null) scope.launch {
                 snackbarHostState.showSnackbar(context.getString(R.string.toast_error_account_null))
             } else
-                viewModel.confirmAssistance(event, account!!)
+                viewModel.confirmAssistance(event)
             showConfirmAssistanceDialog = false
         }
 
