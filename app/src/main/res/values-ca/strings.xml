@@ -135,4 +135,14 @@
     <string name="event_new_pricing_type">Grup</string>
     <string name="event_new_pricing_price">Preu</string>
     <string name="event_new_create">Crear Esdeveniment</string>
+    <string name="settings_category_advanced">Avançat</string>
+    <string name="settings_collect_error_title">Recol·lecta reports d\'error</string>
+    <string name="settings_collect_error_summary">Si s\'habilita, es recol·lectaran reports d\'error anònims, que seran enviats als desenvolupadors per a ser analitzats, i poder solucionar problemes el més ràpid possible.</string>
+    <string name="settings_collect_analytics_title">Recol·lectar analítiques</string>
+    <string name="settings_collect_analytics_summary">Si s\'habilita, estadístiques d\'ús i rendiment anònimes seran recol·lectades i enviades als desenvolupadors. D\'aquesta manera l\'aplicació pot seguir evolucionant, i els problemes que puguen haver poden ser detectats i solucionats més ràpidament.</string>
+    <string name="permission_notifications_title">Permís de notificacions</string>
+    <string name="permission_notifications_message">Des d\'Android 13, cal que dones permís explícit per a rebre notificacions. Per favor, dona permís, o no rebràs cap notificació.</string>
+    <string name="permission_grant">Donar permís</string>
+    <string name="notification_channel_alerts_name">Alertes</string>
+    <string name="notification_channel_alerts_desc">Notificacions enviades per la Filà per a notificar de novetats.</string>
 </resources>

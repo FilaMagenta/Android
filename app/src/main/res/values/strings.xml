@@ -98,6 +98,7 @@
     <string name="settings_collect_analytics_title">Collect analytics</string>
     <string name="settings_collect_analytics_summary">If enabled, anonymous analytics such as activity and performance of the app will be sent to the developers. This way the app can keep evolving, and problems can be detected sooner.</string>
 
+    <string name="permission_grant">Grant permission</string>
     <string name="permission_notifications_title">Notifications permission</string>
     <string name="permission_notifications_message">Since Android 13, explicit permission is required in order to receive notifications. Please, grant the permission, or you won\'t receive any notification.</string>
 
