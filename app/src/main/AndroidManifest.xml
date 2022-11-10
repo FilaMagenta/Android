@@ -71,7 +71,7 @@
             android:authorities="com.arnyminerz.filamagenta.datasync.provider"
             android:name=".auth.AuthProvider"
             android:exported="false"
-            android:syncable="true" />
+            android:syncable="false" />
     </application>
 
     <queries>
