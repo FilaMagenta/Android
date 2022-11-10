@@ -27,10 +27,10 @@ enum class FesterType(
     JUBILAT(DB_TYPE_JUB, R.string.fester_type_jubilat, Colors.Yellow),
     COLABORADOR(DB_TYPE_COL, R.string.fester_type_colaborador, Colors.Yellow),
     BAIXA(DB_TYPE_BAI, R.string.fester_type_baixa, Colors.Black),
-    UNKNOWN(DB_TYPE_OTH, R.string.fester_type_unknown, Colors.Blue);
+    OTHER(DB_TYPE_OTH, R.string.fester_type_other, Colors.Blue);
 
     companion object {
-        fun valueOf(dbType: String?) = values().find { it.dbType == dbType } ?: UNKNOWN
+        fun valueOf(dbType: String?) = values().find { it.dbType == dbType } ?: OTHER
 
         object Colors {
             // https://coolors.co/231f20-bb4430-7ebdc2-f3dfa2-efe6dd

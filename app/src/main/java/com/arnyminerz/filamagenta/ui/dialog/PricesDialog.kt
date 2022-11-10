@@ -29,7 +29,7 @@ fun PricesDialog(
                             Text(
                                 stringResource(
                                     when (type) {
-                                        FesterType.UNKNOWN -> R.string.fester_type_external
+                                        FesterType.OTHER -> R.string.fester_type_external
                                         else -> type.localizedName
                                     }
                                 )
@@ -68,7 +68,7 @@ fun PricesDialogPreview() {
         prices = mapOf(
             FesterType.FESTER to PRICE_EXAMPLE_FESTER,
             FesterType.SIT_ESP to PRICE_EXAMPLE_SIT_ESP,
-            FesterType.UNKNOWN to PRICE_EXAMPLE_UNKNOWN,
+            FesterType.OTHER to PRICE_EXAMPLE_UNKNOWN,
         ),
     )
 }

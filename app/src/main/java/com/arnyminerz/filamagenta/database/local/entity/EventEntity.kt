@@ -79,7 +79,7 @@ data class EventEntity(
         throw UnsupportedOperationException("Menu is null for event#$id")
     else
         menu.pricing.let { price ->
-            price.toList().find { it.first == festerType }?.second ?: price[FesterType.UNKNOWN]
+            price.toList().find { it.first == festerType }?.second ?: price[FesterType.OTHER]
         }
 
     fun hasCapability(capability: EventType.Capabilities) = type.capabilities.contains(capability)

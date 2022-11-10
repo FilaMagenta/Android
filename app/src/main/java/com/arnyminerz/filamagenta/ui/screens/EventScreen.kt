@@ -325,7 +325,7 @@ fun EventScreen(
                             .toList()
                             .find { it.first == festerType }
                             ?.second
-                            ?: menu.pricing[FesterType.UNKNOWN]
+                            ?: menu.pricing[FesterType.OTHER]
                             ?: -1.0
 
                         Text(
