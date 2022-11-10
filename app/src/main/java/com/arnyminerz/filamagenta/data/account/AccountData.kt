@@ -54,7 +54,9 @@ data class AccountData(
             json.getJSONObject("vCard").let { vCard ->
                 val name = vCard.getJSONArray("name").asStringList
                 val telephones = vCard.getJSONArray("telephones")
-                    .map<JSONArray, Pair<String, String>> { it[0] as String to it[1] as String }
+                    .asArrayList
+                    .associate { it[0] as String to it[1] as String }
+
                 AccountData(
                     json.getLong("Id"),
                     name[0],
@@ -64,10 +66,9 @@ data class AccountData(
                         .let { Address(it[0], it[1].split(";")) },
                     json.getString("NIF"),
                     vCard.getDateOrNull("birthday", DayDateFormat),
-                    // tele
-                    json.getStringOrNull("phone"),
-                    json.getStringOrNull("workPhone"),
-                    json.getStringOrNull("mobilePhone"),
+                    telephones["home"],
+                    telephones["work"],
+                    telephones["cell"],
                     vCard.getString("email"),
                     json.getStringOrNull("profileImage"),
                     Wheel(
