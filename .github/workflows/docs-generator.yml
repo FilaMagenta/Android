@@ -43,10 +43,8 @@ jobs:
         run: |
           echo 'KEYSTORE_USERNAME=${{ secrets.KEYSTORE_USERNAME }}' >> local.properties
           echo 'KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}' >> local.properties
-          echo 'DB_HOSTNAME=${{ secrets.DB_HOSTNAME }}' >> local.properties
-          echo 'DB_DATABASE=${{ secrets.DB_DATABASE }}' >> local.properties
-          echo 'DB_USERNAME=${{ secrets.DB_USERNAME }}' >> local.properties
-          echo 'DB_PASSWORD=${{ secrets.DB_PASSWORD }}' >> local.properties
+          echo 'REST_BASE=${{ secrets.REST_BASE }}' >> local.properties
+          echo '${{ secrets.GOOGLE_SERVICES }}' >> app/google-services.json
       - name: 📝 Run dokka
         id: test
         run: |
