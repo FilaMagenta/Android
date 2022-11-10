@@ -135,6 +135,14 @@ val JSONArray.asLongList: List<Long>
     get() = (0 until length()).map { getLong(it) }
 
 /**
+ * Converts the JSON Array into a list of [JSONArray] by running [JSONArray.getJSONArray] on each index.
+ * @author Arnau Mora
+ * @since 20221110
+ */
+val JSONArray.asArrayList: List<JSONArray>
+    get() = (0 until length()).map { getJSONArray(it) }
+
+/**
  * Converts the JSON Array into a list of [JSONObject] by running [JSONArray.getJSONObject] on each index.
  * @author Arnau Mora
  * @since 20221021
