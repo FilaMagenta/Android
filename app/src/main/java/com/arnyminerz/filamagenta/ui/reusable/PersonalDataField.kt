@@ -3,6 +3,7 @@ package com.arnyminerz.filamagenta.ui.reusable
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
@@ -46,6 +47,10 @@ fun LabeledTextField(
     isDisabled: Boolean = false,
     trailing: (@Composable () -> Unit)? = null,
     colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(),
+    keyboardOptions: KeyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    maxLines: Int = 1,
+    singleLine: Boolean = true,
 ) {
     OutlinedTextField(
         value = value ?: "",
@@ -59,7 +64,10 @@ fun LabeledTextField(
         supportingText = supportingTextRes?.let { { Text(stringResource(supportingTextRes)) } },
         trailingIcon = trailing,
         colors = colors,
-        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        maxLines = maxLines,
+        singleLine = singleLine,
     )
 }
 
