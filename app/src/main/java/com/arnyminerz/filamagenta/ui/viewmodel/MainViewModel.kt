@@ -1,6 +1,7 @@
 package com.arnyminerz.filamagenta.ui.viewmodel
 
 import android.accounts.Account
+import android.accounts.OperationCanceledException
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
@@ -10,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.*
 import androidx.navigation.NavController
+import com.android.volley.NetworkResponse
 import com.android.volley.NoConnectionError
 import com.android.volley.VolleyError
 import com.arnyminerz.filamagenta.App
@@ -25,6 +27,9 @@ import com.arnyminerz.filamagenta.database.local.entity.EventEntity
 import com.arnyminerz.filamagenta.database.local.entity.PersonData
 import com.arnyminerz.filamagenta.database.local.entity.ShortPersonData
 import com.arnyminerz.filamagenta.database.remote.RemoteInterface
+import com.arnyminerz.filamagenta.exception.AuthorisationException
+import com.arnyminerz.filamagenta.exception.EventNotFoundException
+import com.arnyminerz.filamagenta.exception.TableNotFoundException
 import com.arnyminerz.filamagenta.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -319,40 +324,78 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Creates a new table for a given event.
+     * Creates a new table for a given event. Uses the currently logged in account.
      * @author Arnau Mora
      * @since 20221015
-     * @param responsible The responsible of the table.
      * @param event The event for which the table will be created.
+     * @see account
+     * @throws NullPointerException If there's no logged in account.
+     * @throws OperationCanceledException If the account's token could not be obtained.
      */
+    @Throws(NullPointerException::class, OperationCanceledException::class)
     fun createNewTable(
-        responsible: PersonData,
         event: EventEntity,
-    ) = viewModelScope.launch(Dispatchers.IO) {
-        TODO("Table creation in REST API")
+    ) = launchIO {
+        val token = accountSingleton.getToken(account.value!!)
+        // TODO: Exception handlers
+        remote.joinEvent(token, event, null, null)
     }
 
     /**
-     * Adds a given person into a table.
+     * Adds a given person into a table. Uses the currently logged in account.
      * @author Arnau Mora
      * @since 20221015
-     * @param table The table to add into.
-     * @param person The person to add into the table.
+     * @param event The event to add the user into.
+     * @param tableIndex The index of the table inside [EventEntity.tables].
+     * @see account
+     * @throws NullPointerException If there's no logged in account.
+     * @throws OperationCanceledException If the account's token could not be obtained.
+     * @throws ArrayIndexOutOfBoundsException If the given [tableIndex] could not be obtained. Either
+     * because the event doesn't have any tables, or because it's out of bounds.
+     * @throws AuthorisationException If the obtained token for the account is not valid.
+     * @throws EventNotFoundException If the given event was not found.
+     * @throws IllegalStateException If the logged in user is already part of another table.
+     * @throws TableNotFoundException If the given table id doesn't match any table.
      */
-    fun addToTable(event: EventEntity, tableIndex: Int, person: PersonData) =
-        viewModelScope.launch(Dispatchers.IO) {
-            TODO("Table joining in REST API")
+    @Throws(
+        NullPointerException::class,
+        OperationCanceledException::class,
+        ArrayIndexOutOfBoundsException::class,
+        AuthorisationException::class,
+        EventNotFoundException::class,
+        IllegalStateException::class,
+        TableNotFoundException::class,
+    )
+    fun addToTable(event: EventEntity, tableIndex: Int) = launchIO {
+        val token = accountSingleton.getToken(account.value!!)
+        val table = event.tables?.get(tableIndex)
+            ?: throw ArrayIndexOutOfBoundsException("Could not get table #$tableIndex of event #${event.id}")
+        try {
+            remote.joinEvent(token, event, table, null)
+        } catch (e: VolleyError) {
+            val resp: NetworkResponse? = e.networkResponse
+            when (resp?.statusCode) {
+                404 -> throw EventNotFoundException("Could not find event with id ${event.id}")
+                400, 406 -> throw AuthorisationException("The obtained token is not valid.")
+                409 -> throw IllegalStateException("The given user is already part of another table.")
+                410 -> throw TableNotFoundException("Could not find a table with id ${table.id}")
+            }
         }
+    }
 
     /**
-     * Confirms the assistance of a given person to a given event.
+     * Confirms the assistance of the currently logged in user to a given event.
      * @author Arnau Mora
      * @since 20221015
      * @param event The event to confirm the assistance to.
-     * @param person The person that is doing the confirmation.
+     * @param assists Whether the user will assist or not.
+     * @see account
+     * @throws NullPointerException If there's no logged in account.
+     * @throws OperationCanceledException If the account's token could not be obtained.
      */
-    fun confirmAssistance(event: EventEntity, person: PersonData) =
-        viewModelScope.launch(Dispatchers.IO) {
-            TODO("Assistance confirmation in REST API")
-        }
+    @Throws(NullPointerException::class, OperationCanceledException::class)
+    fun confirmAssistance(event: EventEntity, assists: Boolean = true) = launchIO {
+        val token = accountSingleton.getToken(account.value!!)
+        remote.joinEvent(token, event, null, assists)
+    }
 }
