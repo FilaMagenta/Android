@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Coffee
+import androidx.compose.material.icons.outlined.EmojiFoodBeverage
+import androidx.compose.material.icons.outlined.LocalDrink
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ChevronLeft
 import androidx.compose.material.icons.rounded.Close
@@ -202,18 +205,36 @@ fun MainActivity.EventAddScreen() {
                             onClick = { drinksIncluded = !drinksIncluded },
                             label = { Text(stringResource(R.string.event_new_menu_drink_included)) },
                             modifier = Modifier.padding(horizontal = 4.dp),
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Outlined.LocalDrink,
+                                    stringResource(R.string.event_new_menu_drink_included)
+                                )
+                            },
                         )
                         FilterChip(
                             selected = coffeeIncluded,
                             onClick = { coffeeIncluded = !coffeeIncluded },
                             label = { Text(stringResource(R.string.event_new_menu_coffee_included)) },
                             modifier = Modifier.padding(horizontal = 4.dp),
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Outlined.Coffee,
+                                    stringResource(R.string.event_new_menu_coffee_included)
+                                )
+                            },
                         )
                         FilterChip(
                             selected = teaIncluded,
                             onClick = { teaIncluded = !teaIncluded },
                             label = { Text(stringResource(R.string.event_new_menu_tea_included)) },
                             modifier = Modifier.padding(horizontal = 4.dp),
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Outlined.EmojiFoodBeverage,
+                                    stringResource(R.string.event_new_menu_tea_included)
+                                )
+                            },
                         )
                     }
                     MenuPartCard(
