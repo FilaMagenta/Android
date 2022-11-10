@@ -2,10 +2,12 @@ package com.arnyminerz.filamagenta.database.remote
 
 import android.content.Context
 import androidx.annotation.WorkerThread
+import com.android.volley.VolleyError
 import com.android.volley.VolleyLog
 import com.android.volley.toolbox.StringRequest
 import com.arnyminerz.filamagenta.BuildConfig
 import com.arnyminerz.filamagenta.auth.AccountSingleton
+import com.arnyminerz.filamagenta.data.event.TableData
 import com.arnyminerz.filamagenta.database.local.AppDatabase
 import com.arnyminerz.filamagenta.database.local.entity.EventEntity
 import com.arnyminerz.filamagenta.database.local.entity.PersonData
@@ -124,7 +126,8 @@ class RemoteInterface private constructor(context: Context) {
                     null
                 }
             }
-            singleton.addToRequestQueue(request)
+            val uuid = singleton.addToRequestQueue(request)
+            cont.invokeOnCancellation { singleton.cancel(uuid) }
         }
     }
 
@@ -233,26 +236,6 @@ class RemoteInterface private constructor(context: Context) {
     }
 
     /**
-     * Fetches the logged in user's data.
-     * @author Arnau Mora
-     * @since 20221110
-     * @param index The index of the account to select.
-     * @return An [PersonData] instance with all the loaded data.
-     * @throws ClassNotFoundException If there are no logged in accounts.
-     */
-    @Throws(ClassNotFoundException::class)
-    @Suppress("ThrowableNotThrown")
-    suspend fun getPersonData(index: Int): PersonData {
-        val account = accountSingleton.getAccounts()
-            .throwUnless(
-                { it.isEmpty() },
-                ClassNotFoundException("There are no logged in accounts.")
-            )[index]
-        val token = accountSingleton.getToken(account)
-        return getPersonData(token)
-    }
-
-    /**
      * Gets the user data of [userId].
      * @author Arnau Mora
      * @since 20221025
@@ -295,5 +278,29 @@ class RemoteInterface private constructor(context: Context) {
         checkData(response)
 
         return response.getJSONArray("data").serialize(EventEntity.Companion)
+    }
+
+    /**
+     * Creates a new table, joins an existing one, or confirms assistance to an event.
+     * @author Arnau Mora
+     * @since 20221110
+     * @param token The token of the authorised user.
+     * @param event The event to join.
+     * @param table The table to join, or null if it's desired to create a new one.
+     * @param assists If the user will be attending to the event or not. Can be null if eat event.
+     * @throws VolleyError If the action could not be performed successfully.
+     */
+    @WorkerThread
+    @Throws(VolleyError::class)
+    suspend fun joinEvent(token: String, event: EventEntity, table: TableData?, assists: Boolean?) {
+        val response = post(
+            buildV1Url("/events/${event.id}/join"),
+            JSONObject().apply {
+                table?.id?.let { put("table_id", it) }
+                assists?.let { put("assists", it) }
+            },
+            tokenHeader(token),
+        )
+        checkSuccessful(response)
     }
 }
