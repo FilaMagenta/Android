@@ -9,7 +9,12 @@ import androidx.annotation.WorkerThread
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.preferences.core.edit
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.android.volley.NetworkResponse
 import com.android.volley.NoConnectionError
@@ -30,7 +35,12 @@ import com.arnyminerz.filamagenta.database.remote.RemoteInterface
 import com.arnyminerz.filamagenta.exception.AuthorisationException
 import com.arnyminerz.filamagenta.exception.EventNotFoundException
 import com.arnyminerz.filamagenta.exception.TableNotFoundException
-import com.arnyminerz.filamagenta.utils.*
+import com.arnyminerz.filamagenta.utils.dataStore
+import com.arnyminerz.filamagenta.utils.getIntPreferences
+import com.arnyminerz.filamagenta.utils.launchIO
+import com.arnyminerz.filamagenta.utils.runBlocking
+import com.arnyminerz.filamagenta.utils.toMap
+import com.arnyminerz.filamagenta.utils.ui
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONException
@@ -247,8 +257,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun getMembersData(tableData: TableData): MutableLiveData<List<ShortPersonData>> =
         MutableLiveData<List<ShortPersonData>>().also {
             launchIO {
+                val token = accountSingleton.getToken(account.value!!)
                 it.postValue(
-                    tableData.getMembersData(getApplication(), selectedAccountIndex.value ?: 0)
+                    tableData.getMembersData(getApplication(), token)
                 )
             }
         }
@@ -256,8 +267,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun getResponsibleData(tableData: TableData): MutableLiveData<ShortPersonData> =
         MutableLiveData<ShortPersonData>().also {
             launchIO {
+                val token = accountSingleton.getToken(account.value!!)
                 it.postValue(
-                    tableData.getResponsibleData(getApplication(), selectedAccountIndex.value ?: 0)
+                    tableData.getResponsibleData(getApplication(), token)
                 )
             }
         }

@@ -13,7 +13,6 @@ import com.arnyminerz.filamagenta.database.local.entity.EventEntity
 import com.arnyminerz.filamagenta.database.local.entity.PersonData
 import com.arnyminerz.filamagenta.database.local.entity.ShortPersonData
 import com.arnyminerz.filamagenta.utils.serialize
-import com.arnyminerz.filamagenta.utils.throwUnless
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
@@ -239,30 +238,33 @@ class RemoteInterface private constructor(context: Context) {
      * Gets the user data of [userId].
      * @author Arnau Mora
      * @since 20221025
+     * @param token The token to use for authorisation.
      * @param userId The id of the user to fetch.
-     * @param accountIndex The index of the account to use. Taken from [AccountSingleton.getAccounts].
      * @return Returns the data of the given user.
      * @throws ClassNotFoundException If there are no logged in accounts.
      * @throws JSONException If the given response could not be parsed.
      */
     @Throws(ClassNotFoundException::class, JSONException::class)
-    suspend fun getAccountData(userId: Long, accountIndex: Int): ShortPersonData {
-        val token = accountSingleton.getAccounts()
-            .throwUnless(
-                { it.isEmpty() },
-                ClassNotFoundException("There are no logged in accounts.")
-            )[accountIndex]
-            .let { accountSingleton.getToken(it) }
+    suspend fun getAccountData(token: String, userId: Long): ShortPersonData {
         val response = query(
-            buildV1Url("/v1/user/data", mapOf("user_id" to userId.toString())),
+            buildV1Url("/user/data", mapOf("user_id" to userId.toString())),
             tokenHeader(token),
         )
         checkSuccessful(response)
         checkData(response)
 
-        val personData = response.getJSONObject("data").serialize(ShortPersonData.Companion)
+        val responseData = response.getJSONObject("data")
+        val personData = if (responseData.has("vCard"))
+            PersonData.fromRest(responseData).short
+        else
+            responseData.serialize(ShortPersonData)
 
-        database.peopleDao().add(personData)
+        database.peopleDao().apply {
+            if (getById(personData.id) != null)
+                update(personData)
+            else
+                add(personData)
+        }
 
         return personData
     }
