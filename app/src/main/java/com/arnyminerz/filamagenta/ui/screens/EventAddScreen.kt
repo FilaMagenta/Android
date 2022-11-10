@@ -4,19 +4,20 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ChevronLeft
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.QuestionMark
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
@@ -110,6 +111,7 @@ fun MainActivity.EventAddScreen() {
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
             var name by remember { mutableStateOf("") }
@@ -180,7 +182,9 @@ fun MainActivity.EventAddScreen() {
                     val desserts = remember { mutableStateListOf<String>() }
                     var drinksIncluded by remember { mutableStateOf(false) }
                     var coffeeIncluded by remember { mutableStateOf(false) }
+                    var teaIncluded by remember { mutableStateOf(false) }
 
+                    Divider()
                     Text(
                         stringResource(R.string.event_new_section_menu),
                         modifier = Modifier
@@ -188,36 +192,30 @@ fun MainActivity.EventAddScreen() {
                             .padding(horizontal = 8.dp),
                         style = MaterialTheme.typography.titleMedium,
                     )
-                    FilterChip(
-                        selected = drinksIncluded,
-                        onClick = { drinksIncluded = !drinksIncluded },
-                        label = { Text(stringResource(R.string.event_new_menu_drink_included)) },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = { /*TODO*/ },
-                            ) {
-                                Icon(
-                                    Icons.Rounded.QuestionMark,
-                                    stringResource(R.string.image_desc_help),
-                                )
-                            }
-                        },
-                    )
-                    FilterChip(
-                        selected = coffeeIncluded,
-                        onClick = { coffeeIncluded = !coffeeIncluded },
-                        label = { Text(stringResource(R.string.event_new_menu_coffee_included)) },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = { /*TODO*/ },
-                            ) {
-                                Icon(
-                                    Icons.Rounded.QuestionMark,
-                                    stringResource(R.string.image_desc_help),
-                                )
-                            }
-                        },
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                    ) {
+                        FilterChip(
+                            selected = drinksIncluded,
+                            onClick = { drinksIncluded = !drinksIncluded },
+                            label = { Text(stringResource(R.string.event_new_menu_drink_included)) },
+                            modifier = Modifier.padding(horizontal = 4.dp),
+                        )
+                        FilterChip(
+                            selected = coffeeIncluded,
+                            onClick = { coffeeIncluded = !coffeeIncluded },
+                            label = { Text(stringResource(R.string.event_new_menu_coffee_included)) },
+                            modifier = Modifier.padding(horizontal = 4.dp),
+                        )
+                        FilterChip(
+                            selected = teaIncluded,
+                            onClick = { teaIncluded = !teaIncluded },
+                            label = { Text(stringResource(R.string.event_new_menu_tea_included)) },
+                            modifier = Modifier.padding(horizontal = 4.dp),
+                        )
+                    }
                     MenuPartCard(
                         titleRes = R.string.event_new_section_menu_starters,
                         plates = starters,
@@ -245,7 +243,8 @@ fun MainActivity.EventAddScreen() {
 fun MenuPartCard(@StringRes titleRes: Int, plates: SnapshotStateList<String>) {
     ElevatedCard(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(8.dp),
     ) {
         var currentPlateName by remember { mutableStateOf("") }
         Text(
@@ -262,7 +261,8 @@ fun MenuPartCard(@StringRes titleRes: Int, plates: SnapshotStateList<String>) {
             trailing = {
                 IconButton(
                     onClick = {
-                        plates.add(currentPlateName)
+                        if (currentPlateName.isNotBlank())
+                            plates.add(currentPlateName)
                         currentPlateName = ""
                     }
                 ) {
@@ -273,8 +273,8 @@ fun MenuPartCard(@StringRes titleRes: Int, plates: SnapshotStateList<String>) {
                 }
             }
         )
-        LazyColumn {
-            items(plates) { plate ->
+        Column {
+            plates.forEach { plate ->
                 ListItem(
                     headlineText = { Text(plate) },
                     trailingContent = {
