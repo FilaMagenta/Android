@@ -277,7 +277,11 @@ class RemoteInterface private constructor(context: Context) {
         checkSuccessful(response)
         checkData(response)
 
-        return response.getJSONObject("data").serialize(ShortPersonData.Companion)
+        val personData = response.getJSONObject("data").serialize(ShortPersonData.Companion)
+
+        database.peopleDao().add(personData)
+
+        return personData
     }
 
     @WorkerThread
