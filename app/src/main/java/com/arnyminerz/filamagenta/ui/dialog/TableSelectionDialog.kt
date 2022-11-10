@@ -6,14 +6,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -23,9 +18,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.arnyminerz.filamagenta.R
 import com.arnyminerz.filamagenta.database.local.entity.EventEntity
-import com.arnyminerz.filamagenta.database.local.entity.ShortPersonData
 import com.arnyminerz.filamagenta.ui.viewmodel.MainViewModel
+import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 
 @Composable
 @ExperimentalMaterial3Api
@@ -49,7 +45,7 @@ fun TableSelectionDialog(
         text = {
             Column(
                 modifier = Modifier
-                    .heightIn(max = 300.dp),
+                    .heightIn(min = 0.dp, max = 300.dp),
             ) {
                 Text(stringResource(R.string.choose_table_dialog_message))
 
@@ -72,25 +68,13 @@ fun TableSelectionDialog(
                         CircularProgressIndicator()
                     }
                 else {
-                    val responsibles by viewModel.getAssistanceData(event).observeAsState()
+                    val responsibles =
+                        event.tables?.map { viewModel.getResponsibleData(it).observeAsState() }
 
                     LazyColumn(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
+                            .fillMaxWidth(),
                     ) {
-                        itemsIndexed(
-                            responsibles ?: ShortPersonData.randomPlaceholder(3)
-                        ) { index, responsible ->
-                            ListItem(
-                                headlineText = { Text(responsible.displayName) },
-                                modifier = Modifier
-                                    .placeholder(visible = responsibles == null)
-                                    .clickable(enabled = responsibles != null) {
-                                        onSelectTable(index)
-                                    },
-                            )
-                        }
                         item {
                             ListItem(
                                 headlineText = {
@@ -103,6 +87,41 @@ fun TableSelectionDialog(
                                     .clickable(onClick = onCreateRequest),
                             )
                         }
+                        if (responsibles != null)
+                            itemsIndexed(responsibles) { index, responsibleState ->
+                                val responsible by responsibleState
+                                ListItem(
+                                    headlineText = {
+                                        Text(
+                                            responsible?.displayName ?: "----------",
+                                            modifier = Modifier
+                                                .placeholder(
+                                                    visible = true,
+                                                    highlight = PlaceholderHighlight.shimmer(),
+                                                ),
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .clickable(enabled = responsible != null) {
+                                            onSelectTable(index)
+                                        },
+                                )
+                            }
+                        else
+                            items(listOf("", "", "", "")) {
+                                ListItem(
+                                    headlineText = {
+                                        Text(
+                                            "----------",
+                                            modifier = Modifier
+                                                .placeholder(
+                                                    visible = true,
+                                                    highlight = PlaceholderHighlight.shimmer(),
+                                                ),
+                                        )
+                                    },
+                                )
+                            }
                     }
                 }
             }
