@@ -5,17 +5,23 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.arnyminerz.filamagenta.R
 import com.arnyminerz.filamagenta.ui.theme.setContentThemed
+import timber.log.Timber
 
 class PermissionActivity : AppCompatActivity() {
     companion object {
@@ -25,6 +31,15 @@ class PermissionActivity : AppCompatActivity() {
 
         const val RESULT_BAD_REQUEST = 10
     }
+
+    private val permissionRequest =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+            if (granted.all { it.value }) {
+                setResult(RESULT_OK)
+                finish()
+            } else
+                Timber.w("Not all permissions granted: $granted")
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +63,7 @@ class PermissionActivity : AppCompatActivity() {
             Column(
                 modifier = Modifier
                     .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = title,
@@ -65,6 +81,11 @@ class PermissionActivity : AppCompatActivity() {
                         .padding(start = 32.dp, end = 32.dp, top = 16.dp),
                     textAlign = TextAlign.Center,
                 )
+                OutlinedButton(
+                    onClick = { permissionRequest.launch(permissions) },
+                ) {
+                    Text(stringResource(R.string.permission_grant))
+                }
             }
         }
     }
