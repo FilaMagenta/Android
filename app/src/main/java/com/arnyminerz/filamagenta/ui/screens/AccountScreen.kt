@@ -152,7 +152,7 @@ fun MainActivity.AccountScreen(account: AccountData) {
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(8.dp),
                 )
-                LabeledTextField(account.address, R.string.account_personal_data_address)
+                LabeledTextField(account.address.address, R.string.account_personal_data_address)
                 LabeledTextField(account.nif, R.string.account_personal_data_dni)
                 LabeledTextField(account.born, R.string.account_personal_data_born)
                 // LabeledTextField(

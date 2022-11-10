@@ -11,7 +11,7 @@ data class AccountData(
     val id: Long,
     val name: String,
     val familyName: String,
-    val address: String?,
+    val address: Address,
     val nif: String,
     val born: Date?,
     val phone: String?,
@@ -32,7 +32,7 @@ data class AccountData(
             json.getLong("id"),
             json.getString("name"),
             json.getString("familyName"),
-            json.getStringOrNull("address"),
+            json.getJSONObject("address", Address.Companion),
             json.getString("nif"),
             json.getDate("born"),
             json.getStringOrNull("phone"),
@@ -58,7 +58,9 @@ data class AccountData(
                     json.getLong("Id"),
                     name[0],
                     name[1],
-                    vCard.getJSONArray("address").asStringList.joinToString(" "),
+                    vCard.getJSONArray("address")
+                        .asStringList
+                        .let { Address(it[0], it[1].split(";")) },
                     json.getString("NIF"),
                     vCard.getDateOrNull("birthday", DayDateFormat),
                     // tele
