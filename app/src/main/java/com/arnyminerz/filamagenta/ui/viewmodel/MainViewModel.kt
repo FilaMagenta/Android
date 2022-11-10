@@ -6,14 +6,17 @@ import android.app.Application
 import android.os.Bundle
 import androidx.annotation.WorkerThread
 import androidx.compose.material3.SnackbarHostState
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.*
 import androidx.navigation.NavController
 import com.android.volley.VolleyError
+import com.arnyminerz.filamagenta.App
 import com.arnyminerz.filamagenta.R
 import com.arnyminerz.filamagenta.activity.MainActivity
 import com.arnyminerz.filamagenta.activity.MainActivity.Companion.EXTRA_ACCOUNT_TYPE
 import com.arnyminerz.filamagenta.auth.AccountSingleton
 import com.arnyminerz.filamagenta.data.ACCOUNT_INDEX
+import com.arnyminerz.filamagenta.data.LAST_EVENTS_SYNC
 import com.arnyminerz.filamagenta.data.account.AccountData
 import com.arnyminerz.filamagenta.data.event.TableData
 import com.arnyminerz.filamagenta.database.local.AppDatabase
@@ -279,6 +282,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 dao.update(event)
             }
         }
+
         // Remove non-existing events
         local.forEach { event ->
             val found = events.find { it.id == event.id }
@@ -288,6 +292,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 dao.remove(event)
             }
         }
+
+        getApplication<App>().dataStore.edit { it[LAST_EVENTS_SYNC] = System.currentTimeMillis() }
     }
 
     /**
