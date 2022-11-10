@@ -8,10 +8,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.arnyminerz.filamagenta.R
 import com.arnyminerz.filamagenta.database.local.entity.PersonData
 import com.arnyminerz.filamagenta.database.local.entity.ShortPersonData
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 
 @Composable
 @ExperimentalMaterial3Api
@@ -24,7 +28,14 @@ fun TableMemberItem(
     ListItem(
         headlineText = {
             Text(
-                people?.find { it.id == personId }?.displayName ?: "Err"
+                people?.let { p ->
+                    p.find { it.id == personId }?.displayName ?: "N/A"
+                } ?: "----------",
+                modifier = Modifier
+                    .placeholder(
+                        visible = people == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    ),
             )
         },
         supportingText = {
