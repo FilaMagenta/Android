@@ -30,17 +30,17 @@ data class TableData(
     }
 
     @WorkerThread
-    suspend fun getResponsibleData(context: Context, accountIndex: Int) =
+    suspend fun getResponsibleData(context: Context, token: String) =
         AppDatabase.getInstance(context)
             .peopleDao()
             .getById(responsibleId)
-            ?: RemoteInterface.getInstance(context).getAccountData(responsibleId, accountIndex)
+            ?: RemoteInterface.getInstance(context).getAccountData(token, responsibleId)
 
     @WorkerThread
-    suspend fun getMembersData(context: Context, accountIndex: Int) = members.map { userId ->
+    suspend fun getMembersData(context: Context, token: String) = members.map { userId ->
         AppDatabase.getInstance(context)
             .peopleDao()
             .getById(userId)
-            ?: RemoteInterface.getInstance(context).getAccountData(userId, accountIndex)
+            ?: RemoteInterface.getInstance(context).getAccountData(token, userId)
     }
 }
