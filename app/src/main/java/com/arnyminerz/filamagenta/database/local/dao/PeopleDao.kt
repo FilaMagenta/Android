@@ -18,6 +18,10 @@ interface PeopleDao {
     @Query("SELECT * FROM people WHERE id=:id")
     suspend fun getById(id: Long): ShortPersonData?
 
+    @Update
+    @WorkerThread
+    suspend fun update(data: ShortPersonData)
+
     @Insert
     @WorkerThread
     suspend fun add(data: PersonData)
