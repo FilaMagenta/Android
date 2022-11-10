@@ -10,7 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.arnyminerz.filamagenta.R
-import com.arnyminerz.filamagenta.data.account.AccountData
+import com.arnyminerz.filamagenta.database.local.entity.PersonData
 import com.arnyminerz.filamagenta.database.local.entity.ShortPersonData
 
 @Composable
@@ -18,7 +18,7 @@ import com.arnyminerz.filamagenta.database.local.entity.ShortPersonData
 fun TableMemberItem(
     personId: Long,
     people: List<ShortPersonData>?,
-    loggedInAccount: AccountData,
+    loggedInAccount: PersonData,
     isResponsible: Boolean = false,
 ) {
     ListItem(

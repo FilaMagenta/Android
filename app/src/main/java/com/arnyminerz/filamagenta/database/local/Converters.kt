@@ -3,15 +3,15 @@
 package com.arnyminerz.filamagenta.database.local
 
 import androidx.room.TypeConverter
-import com.arnyminerz.filamagenta.data.account.FesterType
-import com.arnyminerz.filamagenta.data.account.PaymentMethod
+import com.arnyminerz.filamagenta.data.account.*
 import com.arnyminerz.filamagenta.data.event.Menu
 import com.arnyminerz.filamagenta.data.event.TableData
 import com.arnyminerz.filamagenta.utils.asLongList
+import com.arnyminerz.filamagenta.utils.asStringList
 import com.arnyminerz.filamagenta.utils.json
 import com.arnyminerz.filamagenta.utils.serialize
 import org.json.JSONArray
-import java.util.Date
+import java.util.*
 
 class Converters {
     @TypeConverter
@@ -61,15 +61,43 @@ class Converters {
     fun stringToFesterType(value: String?): FesterType? = value?.let { FesterType.valueOf(it) }
 
     @TypeConverter
-    fun paymentMethodToString(value: PaymentMethod?): String? {
-        return value?.name
-    }
+    fun paymentMethodToString(value: PaymentMethod?): String? = value?.name
 
     @TypeConverter
     fun stringToPM(value: String?): PaymentMethod? = value?.let { PaymentMethod.valueOf(it) }
 
     @TypeConverter
     fun longListToString(value: List<Long>?): String? = value?.let { JSONArray(it).toString() }
+
     @TypeConverter
     fun stringToLongList(value: String?): List<Long>? = value?.let { JSONArray(it).asLongList }
+
+    @TypeConverter
+    fun addressToString(address: Address?): String? = address?.toJson()?.toString()
+
+    @TypeConverter
+    fun stringToAddress(address: String?): Address? = address?.json?.serialize(Address.Companion)
+
+    @TypeConverter
+    fun wheelToString(value: Wheel?): String? = value?.toJson()?.toString()
+
+    @TypeConverter
+    fun stringToWheel(value: String?): Wheel? = value?.json?.serialize(Wheel.Companion)
+
+    @TypeConverter
+    fun trebuchetToString(value: TrebuchetData?): String? = value?.toJson()?.toString()
+
+    @TypeConverter
+    fun stringToTrebuchet(value: String?): TrebuchetData? =
+        value?.json?.serialize(TrebuchetData.Companion)
+
+    @TypeConverter
+    fun permissionsToString(value: List<Permission>?): String? = value
+        ?.map { it.name }
+        ?.let { JSONArray(it).toString() }
+
+    @TypeConverter
+    fun stringToPermissions(value: String?): List<Permission>? = value
+        ?.let { JSONArray(it).asStringList }
+        ?.map { Permission.valueOf(it) }
 }

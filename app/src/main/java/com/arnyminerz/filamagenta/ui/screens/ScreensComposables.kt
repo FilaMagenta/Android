@@ -9,6 +9,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
@@ -108,13 +109,11 @@ fun NavGraphBuilder.accountComposable(activity: MainActivity) {
             activity.navController.navigateUp()
             return@composable
         }
-        val account = activity.viewModel.findAccountDataByName(accountName) ?: run {
-            Timber.e("Could not find account named $accountName")
-            activity.navController.navigateUp()
-            return@composable
+        val account by remember {
+            activity.viewModel.findAccountDataByName(accountName)
         }
 
-        activity.AccountScreen(account)
+        account?.let { activity.AccountScreen(it) } ?: LoadingIndicatorBox()
     }
 }
 

@@ -8,16 +8,14 @@ import android.accounts.OperationCanceledException
 import android.app.Activity
 import android.content.Context
 import android.os.Build
-import android.os.Bundle
 import android.os.Handler
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.arnyminerz.filamagenta.BuildConfig
 import com.arnyminerz.filamagenta.BuildConfig.ACCOUNT_TYPE
-import com.arnyminerz.filamagenta.data.account.AccountData
-import com.arnyminerz.filamagenta.utils.json
-import com.arnyminerz.filamagenta.utils.putJson
+import com.arnyminerz.filamagenta.database.local.AppDatabase
+import com.arnyminerz.filamagenta.database.local.entity.PersonData
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -47,6 +45,8 @@ class AccountSingleton private constructor(context: Context) {
     }
 
     private val accountManager = AccountManager.get(context)
+
+    private val database = AppDatabase.getInstance(context)
 
     /**
      * Observes the current log in status.
@@ -91,10 +91,9 @@ class AccountSingleton private constructor(context: Context) {
         .also { accountsListState.postValue(it) }
 
     @WorkerThread
-    fun getUserData(account: Account): AccountData = accountManager
-        .getUserData(account, "data")
-        .json
-        .let { AccountData.fromJson(it) }
+    suspend fun getPersonData(account: Account): PersonData? = database
+        .peopleDao()
+        .getDataByNif(account.name)
 
     /**
      * Stores the given credentials into the account manager.
@@ -102,18 +101,18 @@ class AccountSingleton private constructor(context: Context) {
      * Updates [loggedIn].
      * @author Arnau Mora
      * @since 20221011
-     * @param accountData The [AccountData] of the user.
+     * @param personData The [PersonData] of the user.
      * @param password The password that matches the one of the given user.
      * @return `true` if the account was added successfully, `false` otherwise.
      */
     @WorkerThread
-    fun addAccount(accountData: AccountData, password: String, token: String): Boolean {
-        val account = Account(accountData.nif, ACCOUNT_TYPE)
+    fun addAccount(personData: PersonData, password: String, token: String): Boolean {
+        val account = Account(personData.nif, ACCOUNT_TYPE)
         val success = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             accountManager.addAccountExplicitly(
                 account,
                 password,
-                Bundle().apply { putJson("data", accountData) },
+                null,
                 mapOf(
                     BuildConfig.APPLICATION_ID to AccountManager.VISIBILITY_VISIBLE,
                 ),
@@ -123,7 +122,7 @@ class AccountSingleton private constructor(context: Context) {
             accountManager.addAccountExplicitly(
                 account,
                 password,
-                Bundle().apply { putJson("data", accountData) },
+                null,
             ).also { if (it) loggedIn.postValue(true) }
                 .also { getAccounts() }
         if (!success)
@@ -133,7 +132,7 @@ class AccountSingleton private constructor(context: Context) {
     }
 
     @WorkerThread
-    fun setPassword(accountData: AccountData, password: String) =
+    fun setPassword(accountData: PersonData, password: String) =
         accountManager.setPassword(Account(accountData.nif, ACCOUNT_TYPE), password)
 
     /**

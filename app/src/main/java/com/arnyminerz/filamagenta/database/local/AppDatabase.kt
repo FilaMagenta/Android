@@ -8,10 +8,11 @@ import androidx.room.TypeConverters
 import com.arnyminerz.filamagenta.database.local.dao.EventsDao
 import com.arnyminerz.filamagenta.database.local.dao.PeopleDao
 import com.arnyminerz.filamagenta.database.local.entity.EventEntity
+import com.arnyminerz.filamagenta.database.local.entity.PersonData
 import com.arnyminerz.filamagenta.database.local.entity.ShortPersonData
 
 @Database(
-    entities = [EventEntity::class, ShortPersonData::class],
+    entities = [EventEntity::class, ShortPersonData::class, PersonData::class],
     version = 1,
 )
 @TypeConverters(Converters::class)

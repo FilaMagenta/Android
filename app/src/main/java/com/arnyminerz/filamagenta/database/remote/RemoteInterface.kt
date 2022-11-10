@@ -6,8 +6,9 @@ import com.android.volley.VolleyLog
 import com.android.volley.toolbox.StringRequest
 import com.arnyminerz.filamagenta.BuildConfig
 import com.arnyminerz.filamagenta.auth.AccountSingleton
-import com.arnyminerz.filamagenta.data.account.AccountData
+import com.arnyminerz.filamagenta.database.local.AppDatabase
 import com.arnyminerz.filamagenta.database.local.entity.EventEntity
+import com.arnyminerz.filamagenta.database.local.entity.PersonData
 import com.arnyminerz.filamagenta.database.local.entity.ShortPersonData
 import com.arnyminerz.filamagenta.utils.serialize
 import com.arnyminerz.filamagenta.utils.throwUnless
@@ -39,6 +40,8 @@ class RemoteInterface private constructor(context: Context) {
     private val singleton = VolleySingleton.getInstance(context)
 
     private val accountSingleton = AccountSingleton.getInstance(context)
+
+    private val database = AppDatabase.getInstance(context)
 
     /**
      * Makes a GET request to the given URL, with the provided headers. Converts the answer to a
@@ -197,14 +200,14 @@ class RemoteInterface private constructor(context: Context) {
     /**
      * Fetches the logged in user's data.
      * @author Arnau Mora
-     * @since 20221021
+     * @since 20221110
      * @param token The authentication token of the user.
      * @throws JSONException If an error is thrown while parsing the response.
-     * @return An [AccountData] instance with all the loaded data.
+     * @return A [PersonData] instance with all the loaded data.
      */
     @WorkerThread
     @Throws(IllegalStateException::class, JSONException::class)
-    suspend fun getAccountData(token: String): AccountData {
+    suspend fun getPersonData(token: String): PersonData {
         val response = query(
             buildV1Url("/user/data"),
             tokenHeader(token),
@@ -214,27 +217,39 @@ class RemoteInterface private constructor(context: Context) {
 
         val data = response.getJSONObject("data")
         Timber.i("data: %s", data.toString())
-        return AccountData.fromRest(data)
+        val personData = PersonData.fromRest(data)
+
+        // Store into room
+        val dao = database.peopleDao()
+        dao.getDataById(personData.id)?.run {
+            // If already exists, update
+            dao.update(personData)
+        } ?: run {
+            // If not exists, add
+            dao.add(personData)
+        }
+
+        return personData
     }
 
     /**
      * Fetches the logged in user's data.
      * @author Arnau Mora
-     * @since 20221025
+     * @since 20221110
      * @param index The index of the account to select.
-     * @return An [AccountData] instance with all the loaded data.
+     * @return An [PersonData] instance with all the loaded data.
      * @throws ClassNotFoundException If there are no logged in accounts.
      */
     @Throws(ClassNotFoundException::class)
     @Suppress("ThrowableNotThrown")
-    suspend fun getAccountData(index: Int): AccountData {
+    suspend fun getPersonData(index: Int): PersonData {
         val account = accountSingleton.getAccounts()
             .throwUnless(
                 { it.isEmpty() },
                 ClassNotFoundException("There are no logged in accounts.")
             )[index]
         val token = accountSingleton.getToken(account)
-        return getAccountData(token)
+        return getPersonData(token)
     }
 
     /**

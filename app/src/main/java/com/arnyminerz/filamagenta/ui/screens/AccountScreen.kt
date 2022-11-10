@@ -22,20 +22,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.arnyminerz.filamagenta.R
 import com.arnyminerz.filamagenta.activity.MainActivity
-import com.arnyminerz.filamagenta.data.account.AccountData
+import com.arnyminerz.filamagenta.database.local.entity.PersonData
 import com.arnyminerz.filamagenta.ui.reusable.AddToCalendarIconButton
 import com.arnyminerz.filamagenta.ui.reusable.LabeledTextField
 import com.arnyminerz.filamagenta.ui.reusable.WheelNumber
 
 @ExperimentalMaterial3Api
 @Composable
-fun MainActivity.AccountScreen(account: AccountData) {
+fun MainActivity.AccountScreen(account: PersonData) {
     var showSignOutDialog by remember { mutableStateOf(false) }
 
     val accounts by viewModel.accountsList.observeAsState()
-    val isAccountOneOfLoggedIn = accounts
-        ?.mapNotNull { viewModel.findAccountDataByName(it.name) }
-        ?.find { it.id == account.id } != null
+    val isAccountOneOfLoggedIn = accounts?.find { it.name == account.nif } != null
 
     if (showSignOutDialog && isAccountOneOfLoggedIn)
         AlertDialog(

@@ -1,5 +1,8 @@
-package com.arnyminerz.filamagenta.data.account
+package com.arnyminerz.filamagenta.database.local.entity
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.arnyminerz.filamagenta.data.account.*
 import com.arnyminerz.filamagenta.utils.*
 import com.arnyminerz.filamagenta.utils.serialize.JsonSerializable
 import com.arnyminerz.filamagenta.utils.serialize.JsonSerializer
@@ -8,8 +11,11 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
-data class AccountData(
-    val id: Long,
+@Entity(
+    tableName = "people_data"
+)
+data class PersonData(
+    @PrimaryKey val id: Long,
     val name: String,
     val familyName: String,
     val address: Address,
@@ -27,9 +33,9 @@ data class AccountData(
     val type: FesterType,
     val paymentMethod: PaymentMethod,
     val permissions: List<Permission>,
-) : JsonSerializable() {
-    companion object : JsonSerializer<AccountData> {
-        override fun fromJson(json: JSONObject): AccountData = AccountData(
+) : EntityInt, JsonSerializable() {
+    companion object : JsonSerializer<PersonData> {
+        override fun fromJson(json: JSONObject): PersonData = PersonData(
             json.getLong("id"),
             json.getString("name"),
             json.getString("familyName"),
@@ -50,14 +56,15 @@ data class AccountData(
             json.getJSONArray("permissions").asStringList.map { Permission.valueOf(it) },
         )
 
-        fun fromRest(json: JSONObject): AccountData =
+        fun fromRest(json: JSONObject): PersonData =
             json.getJSONObject("vCard").let { vCard ->
                 val name = vCard.getJSONArray("name").asStringList
                 val telephones = vCard.getJSONArray("telephones")
                     .asArrayList
                     .associate { it[0] as String to it[1] as String }
+                val grade = json.getJSONObject("Grade")
 
-                AccountData(
+                PersonData(
                     json.getLong("Id"),
                     name[0],
                     name[1],
@@ -72,17 +79,17 @@ data class AccountData(
                     vCard.getString("email"),
                     vCard.getStringOrNull("photo"),
                     Wheel(
-                        json.getJSONObject("Grade").getBoolean("LockWhitesWheel"),
+                        grade.getBoolean("LockWhitesWheel"),
                         json.getLong("WhitesWheelNumber"),
                     ),
                     Wheel(
-                        json.getJSONObject("Grade").getBoolean("LockBlacksWheel"),
+                        grade.getBoolean("LockBlacksWheel"),
                         json.getLong("BlacksWheelNumber"),
                     ),
                     json.getStringOrNull("Registration")
                         ?.let { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it) },
                     json.getJSONObjectOrNull("trebuchet")?.serialize(TrebuchetData.Companion),
-                    FesterType.valueOf(json.getStringOrNull("type")),
+                    FesterType.valueOf(grade.getStringOrNull("DisplayName")),
                     PaymentMethod.valueOf(json.getIntOrNull("payment")),
                     json.getJSONArrayOrNull("permissions")
                         ?.asStringList
@@ -113,15 +120,6 @@ data class AccountData(
         put("type", type.dbType)
         put("payment", paymentMethod.id)
         put("permissions", JSONArray(permissions.map { it.name }))
-    }
-
-    val username: String
-        get() = name.trim().lowercase().replaceFirstChar { it.uppercaseChar() }
-
-    override fun equals(other: Any?): Boolean {
-        if (other !is AccountData)
-            return false
-        return other.id == id
     }
 
     fun hasPermission(permission: Permission): Boolean =

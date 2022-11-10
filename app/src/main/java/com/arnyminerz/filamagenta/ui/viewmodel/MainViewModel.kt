@@ -6,6 +6,7 @@ import android.app.Application
 import android.os.Bundle
 import androidx.annotation.WorkerThread
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.*
 import androidx.navigation.NavController
@@ -18,10 +19,10 @@ import com.arnyminerz.filamagenta.activity.MainActivity.Companion.EXTRA_ACCOUNT_
 import com.arnyminerz.filamagenta.auth.AccountSingleton
 import com.arnyminerz.filamagenta.data.ACCOUNT_INDEX
 import com.arnyminerz.filamagenta.data.LAST_EVENTS_SYNC
-import com.arnyminerz.filamagenta.data.account.AccountData
 import com.arnyminerz.filamagenta.data.event.TableData
 import com.arnyminerz.filamagenta.database.local.AppDatabase
 import com.arnyminerz.filamagenta.database.local.entity.EventEntity
+import com.arnyminerz.filamagenta.database.local.entity.PersonData
 import com.arnyminerz.filamagenta.database.local.entity.ShortPersonData
 import com.arnyminerz.filamagenta.database.remote.RemoteInterface
 import com.arnyminerz.filamagenta.utils.*
@@ -76,12 +77,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     /**
      * Maps the value from [account], but runs [findAccountDataByName] before returning. This way
-     * the value is mapped to an [AccountData].
+     * the value is mapped to a [PersonData].
      * @author Arnau Mora
      * @since 20221016
      */
-    val accountData: LiveData<AccountData?> = Transformations.map(account) {
-        findAccountDataByName(it.name)
+    val accountData: LiveData<PersonData?> = Transformations.map(account) { account ->
+        runBlocking { accountSingleton.getPersonData(account) }
     }
 
     /**
@@ -111,6 +112,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         Timber.d("Got accounts. Synchronizing events for each account...")
                         for (account in accounts) {
                             val token = accountSingleton.getToken(account)
+                            Timber.d("Synchronizing data for ${account.name}...")
+                            remote.getPersonData(token)
+                            Timber.d("Synchronizing events for ${account.name}...")
                             synchronizeEvents(token)
                         }
                     } catch (e: SQLException) {
@@ -155,10 +159,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 )
                 return@launchIO
             }*/
-            val accountData = remote.getAccountData(token)
+            val accountData = remote.getPersonData(token)
 
             if (addingNewAccount) {
-                Timber.i("Adding new account (%s).", accountData.username)
+                Timber.i("Adding new account (%s).", accountData.nif)
                 val accountAdded = accountSingleton.addAccount(
                     accountData,
                     password,
@@ -211,25 +215,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun signOut(accountData: AccountData, activity: Activity) =
+    fun signOut(accountData: PersonData, activity: Activity) =
         viewModelScope.launch(Dispatchers.IO) {
-            Timber.w("Removing account ${accountData.username}...")
+            Timber.w("Removing account ${accountData.nif}...")
             val account = accountSingleton
                 .getAccounts()
-                .find { it.name == accountData.username }
+                .find { it.name == accountData.nif }
                 ?: run {
-                    Timber.e("Could not find account with name ${accountData.username}")
+                    Timber.e("Could not find account with NIF ${accountData.nif}")
                     return@launch
                 }
             val accountRemoved = accountSingleton.removeAccount(account, activity)
             Timber.i("Account ${accountData.name} removed? $accountRemoved")
         }
 
-    fun findAccountDataByName(name: String) =
-        accountSingleton.getAccounts()
-            .find { it.name == name }
-            ?.let { accountSingleton.getUserData(it) }
-            .also { if (it == null) Timber.d("Could not find an account named '%s'", name) }
+    fun findAccountDataByName(name: String) = mutableStateOf<PersonData?>(null).apply {
+        launchIO {
+            accountSingleton.getAccounts()
+                .find { it.name == name }
+                ?.let { accountSingleton.getPersonData(it) }
+                ?.also { ui { value = it } }
+                .also { if (it == null) Timber.d("Could not find an account named '%s'", name) }
+        }
+    }
 
     fun getAssistanceData(event: EventEntity): MutableLiveData<List<ShortPersonData>> =
         MutableLiveData<List<ShortPersonData>>().also {
@@ -309,7 +317,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * @param event The event for which the table will be created.
      */
     fun createNewTable(
-        responsible: AccountData,
+        responsible: PersonData,
         event: EventEntity,
     ) = viewModelScope.launch(Dispatchers.IO) {
         TODO("Table creation in REST API")
@@ -322,7 +330,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * @param table The table to add into.
      * @param person The person to add into the table.
      */
-    fun addToTable(event: EventEntity, tableIndex: Int, person: AccountData) =
+    fun addToTable(event: EventEntity, tableIndex: Int, person: PersonData) =
         viewModelScope.launch(Dispatchers.IO) {
             TODO("Table joining in REST API")
         }
@@ -334,7 +342,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * @param event The event to confirm the assistance to.
      * @param person The person that is doing the confirmation.
      */
-    fun confirmAssistance(event: EventEntity, person: AccountData) =
+    fun confirmAssistance(event: EventEntity, person: PersonData) =
         viewModelScope.launch(Dispatchers.IO) {
             TODO("Assistance confirmation in REST API")
         }
