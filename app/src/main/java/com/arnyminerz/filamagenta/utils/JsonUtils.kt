@@ -69,6 +69,12 @@ fun JSONObject.getLongOrNull(key: String): Long? =
         }
     else null
 
+fun <T> JSONObject.getJSONObject(key: String, serializer: JsonSerializer<T>): T =
+    getJSONObject(key).serialize(serializer)
+
+fun <T> JSONObject.getJSONObjectOrNull(key: String, serializer: JsonSerializer<T>): T? =
+    getJSONObjectOrNull(key)?.serialize(serializer)
+
 fun JSONObject.getJSONObjectOrNull(key: String): JSONObject? =
     if (has(key))
         try {
