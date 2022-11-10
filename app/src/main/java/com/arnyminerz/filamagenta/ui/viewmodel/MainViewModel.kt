@@ -244,15 +244,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getAssistanceData(event: EventEntity): MutableLiveData<List<ShortPersonData>> =
-        MutableLiveData<List<ShortPersonData>>().also {
-            launchIO {
-                it.postValue(
-                    event.getAssistanceData(getApplication(), selectedAccountIndex.value ?: 0)
-                )
-            }
-        }
-
     fun getMembersData(tableData: TableData): MutableLiveData<List<ShortPersonData>> =
         MutableLiveData<List<ShortPersonData>>().also {
             launchIO {

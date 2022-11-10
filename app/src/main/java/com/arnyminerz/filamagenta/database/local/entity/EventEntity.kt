@@ -1,7 +1,5 @@
 package com.arnyminerz.filamagenta.database.local.entity
 
-import android.content.Context
-import androidx.annotation.WorkerThread
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -10,12 +8,15 @@ import com.arnyminerz.filamagenta.data.account.FesterType
 import com.arnyminerz.filamagenta.data.event.EventType
 import com.arnyminerz.filamagenta.data.event.Menu
 import com.arnyminerz.filamagenta.data.event.TableData
-import com.arnyminerz.filamagenta.database.local.AppDatabase
-import com.arnyminerz.filamagenta.database.remote.RemoteInterface
-import com.arnyminerz.filamagenta.utils.*
+import com.arnyminerz.filamagenta.utils.asLongList
+import com.arnyminerz.filamagenta.utils.getDate
+import com.arnyminerz.filamagenta.utils.getJSONArrayOrNull
+import com.arnyminerz.filamagenta.utils.getJSONObjectOrNull
+import com.arnyminerz.filamagenta.utils.getStringOrNull
+import com.arnyminerz.filamagenta.utils.serialize
 import com.arnyminerz.filamagenta.utils.serialize.JsonSerializer
 import org.json.JSONObject
-import java.util.*
+import java.util.Date
 
 @Entity(
     tableName = "events",
@@ -88,14 +89,6 @@ data class EventEntity(
 
     fun hasAllCapabilities(vararg capabilities: EventType.Capabilities) =
         capabilities.all { hasCapability(it) }
-
-    @WorkerThread
-    suspend fun getAssistanceData(context: Context, accountIndex: Int) = assistance?.map { userId ->
-        AppDatabase.getInstance(context)
-            .peopleDao()
-            .getById(userId)
-            ?: RemoteInterface.getInstance(context).getAccountData(userId, accountIndex)
-    }
 }
 
 fun List<EventEntity>.assists(userId: Long) =
