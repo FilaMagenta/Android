@@ -11,17 +11,20 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 data class TableData(
+    val id: Long,
     val responsibleId: Long,
     val members: List<Long>,
 ) : JsonSerializable() {
     companion object : JsonSerializer<TableData> {
         override fun fromJson(json: JSONObject): TableData = TableData(
+            json.getLong("id"),
             json.getLong("responsible"),
             json.getJSONArray("members").asLongList,
         )
     }
 
     override fun toJson(): JSONObject = JSONObject().apply {
+        put("id", id)
         put("responsible", responsibleId)
         put("members", JSONArray(members))
     }
