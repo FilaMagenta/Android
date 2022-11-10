@@ -2,14 +2,31 @@ package com.arnyminerz.filamagenta.database.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.arnyminerz.filamagenta.data.account.*
-import com.arnyminerz.filamagenta.utils.*
+import com.arnyminerz.filamagenta.data.account.Address
+import com.arnyminerz.filamagenta.data.account.FesterType
+import com.arnyminerz.filamagenta.data.account.PaymentMethod
+import com.arnyminerz.filamagenta.data.account.Permission
+import com.arnyminerz.filamagenta.data.account.TrebuchetData
+import com.arnyminerz.filamagenta.data.account.Wheel
+import com.arnyminerz.filamagenta.utils.DayDateFormat
+import com.arnyminerz.filamagenta.utils.asArrayList
+import com.arnyminerz.filamagenta.utils.asStringList
+import com.arnyminerz.filamagenta.utils.getDate
+import com.arnyminerz.filamagenta.utils.getDateOrNull
+import com.arnyminerz.filamagenta.utils.getIntOrNull
+import com.arnyminerz.filamagenta.utils.getJSONArrayOrNull
+import com.arnyminerz.filamagenta.utils.getJSONObject
+import com.arnyminerz.filamagenta.utils.getJSONObjectOrNull
+import com.arnyminerz.filamagenta.utils.getStringOrNull
+import com.arnyminerz.filamagenta.utils.putDate
+import com.arnyminerz.filamagenta.utils.serialize
 import com.arnyminerz.filamagenta.utils.serialize.JsonSerializable
 import com.arnyminerz.filamagenta.utils.serialize.JsonSerializer
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 @Entity(
     tableName = "people_data"
@@ -124,4 +141,7 @@ data class PersonData(
 
     fun hasPermission(permission: Permission): Boolean =
         permissions.find { it == permission } != null
+
+    val short: ShortPersonData
+        get() = ShortPersonData(id = id, displayName = "$name $familyName")
 }
