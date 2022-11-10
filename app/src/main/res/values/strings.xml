@@ -60,6 +60,7 @@
 
     <string name="toast_error_unknown">Unknown error</string>
     <string name="toast_login_not_found">NIF not found</string>
+    <string name="toast_login_server">Could not reach server</string>
     <string name="toast_login_wrong_credentials">Wrong username or password</string>
     <string name="toast_login_max_attempts">Max wrong password attempts reached</string>
     <string name="toast_no_internet">No Internet connection</string>
