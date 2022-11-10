@@ -5,6 +5,7 @@ import com.arnyminerz.filamagenta.utils.serialize.JsonSerializable
 import com.arnyminerz.filamagenta.utils.serialize.JsonSerializer
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.SimpleDateFormat
 import java.util.*
 
 data class AccountData(
@@ -21,7 +22,7 @@ data class AccountData(
     val profileImage: String?,
     val whiteWheel: Wheel?,
     val blackWheel: Wheel?,
-    val age: Int?,
+    val registration: Date?,
     val trebuchetData: TrebuchetData?,
     val type: FesterType,
     val paymentMethod: PaymentMethod,
@@ -42,7 +43,7 @@ data class AccountData(
             json.getStringOrNull("profileImage"),
             json.getJSONObject("wheel").getJSONObject("whites").serialize(Wheel.Companion),
             json.getJSONObject("wheel").getJSONObject("blacks").serialize(Wheel.Companion),
-            json.getIntOrNull("age"),
+            json.getDateOrNull("registration"),
             json.getJSONObjectOrNull("trebuchet")?.serialize(TrebuchetData.Companion),
             FesterType.valueOf(json.getStringOrNull("type")),
             PaymentMethod.valueOf(json.getIntOrNull("payment")),
@@ -77,7 +78,8 @@ data class AccountData(
                         json.getJSONObject("Grade").getBoolean("LockBlacksWheel"),
                         json.getLong("BlacksWheelNumber"),
                     ),
-                    json.getIntOrNull("age"),
+                    json.getStringOrNull("Registration")
+                        ?.let { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it) },
                     json.getJSONObjectOrNull("trebuchet")?.serialize(TrebuchetData.Companion),
                     FesterType.valueOf(json.getStringOrNull("type")),
                     PaymentMethod.valueOf(json.getIntOrNull("payment")),
@@ -95,7 +97,7 @@ data class AccountData(
         put("id", id)
         put("name", name)
         put("familyName", familyName)
-        put("address", address)
+        put("address", address.toJson())
         put("nif", nif)
         putDate("born", born)
         put("phone", phone)
@@ -107,7 +109,7 @@ data class AccountData(
             put("whites", whiteWheel?.toJson())
             put("blacks", blackWheel?.toJson())
         })
-        put("age", age)
+        putDate("registration", registration)
         put("trebuchet", trebuchetData?.toJson())
         put("type", type.dbType)
         put("payment", paymentMethod.id)
