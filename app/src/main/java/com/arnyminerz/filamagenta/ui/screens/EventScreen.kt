@@ -256,7 +256,6 @@ fun EventScreen(
                     )
                     MarkdownText(
                         event.description,
-                        bodyStyle = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 8.dp, bottom = 8.dp, end = 8.dp),

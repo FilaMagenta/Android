@@ -7,7 +7,3 @@ import androidx.datastore.preferences.core.longPreferencesKey
 val ACCOUNT_INDEX = intPreferencesKey("account_index")
 
 val LAST_EVENTS_SYNC = longPreferencesKey("events_sync_time")
-
-val ERROR_COLLECTION = booleanPreferencesKey("error_collection")
-
-val ANALYTICS_COLLECTION = booleanPreferencesKey("analytics_collection")

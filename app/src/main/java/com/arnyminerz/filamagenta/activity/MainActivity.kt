@@ -1,8 +1,5 @@
 package com.arnyminerz.filamagenta.activity
 
-import android.Manifest
-import android.content.pm.PackageManager.PERMISSION_GRANTED
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -11,25 +8,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
-import com.arnyminerz.filamagenta.R
-import com.arnyminerz.filamagenta.ui.screens.accountComposable
-import com.arnyminerz.filamagenta.ui.screens.errorComposable
-import com.arnyminerz.filamagenta.ui.screens.eventAddComposable
-import com.arnyminerz.filamagenta.ui.screens.eventComposable
-import com.arnyminerz.filamagenta.ui.screens.loadingComposable
-import com.arnyminerz.filamagenta.ui.screens.loginComposable
-import com.arnyminerz.filamagenta.ui.screens.mainComposable
+import com.arnyminerz.filamagenta.ui.screens.*
 import com.arnyminerz.filamagenta.ui.theme.setContentThemed
 import com.arnyminerz.filamagenta.ui.viewmodel.MainViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
-import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -58,12 +44,6 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var navController: NavHostController
 
-    private val requestPermissionLauncher = registerForActivityResult(
-        PermissionActivity.Contract()
-    ) { result ->
-        Timber.i("Permission result: %d", result)
-    }
-
     @OptIn(
         ExperimentalPagerApi::class,
         ExperimentalMaterial3Api::class,
@@ -74,9 +54,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        askNotificationPermission()
-        checkForGooglePlayServices()
 
         setContentThemed {
             navController = rememberAnimatedNavController()
@@ -101,31 +78,5 @@ class MainActivity : AppCompatActivity() {
 
         if (this::navController.isInitialized)
             viewModel.load(navController, intent.extras, true)
-    }
-
-    private fun askNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS,
-                ) == PERMISSION_GRANTED
-            ) requestPermissionLauncher.launch(
-                PermissionActivity.PermissionRequest(
-                    getString(R.string.permission_notifications_title),
-                    getString(R.string.permission_notifications_message),
-                    listOf(Manifest.permission.POST_NOTIFICATIONS),
-                )
-            )
-    }
-
-    private fun checkForGooglePlayServices(): Boolean {
-        val googleApiAvailability = GoogleApiAvailability.getInstance()
-        val status = googleApiAvailability.isGooglePlayServicesAvailable(this)
-        return if (status != ConnectionResult.SUCCESS) {
-            if (googleApiAvailability.isUserResolvableError(status))
-                googleApiAvailability.getErrorDialog(this, status, 2404)?.show()
-            false
-        } else
-            true
     }
 }
