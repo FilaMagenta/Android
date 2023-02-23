@@ -4,7 +4,7 @@ buildscript {
         kotlin_version = '1.7.20'
         about_libraries_version = '10.6.0'
         ksp_version = '1.0.7'
-        agp_version = '7.3.1'
+        agp_version = '7.4.1'
         detekt_version = '1.22.0'
     }
     repositories {
