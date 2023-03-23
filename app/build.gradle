@@ -210,7 +210,7 @@ dependencies {
     implementation 'androidx.window:window:1.0.0'
 
     // Jetpack Compose - Accompanist
-    def accompanist_version = "0.28.0"
+    def accompanist_version = "0.30.0"
     implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
     implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
     implementation "com.google.accompanist:accompanist-placeholder-material:$accompanist_version"
