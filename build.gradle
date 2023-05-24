@@ -5,7 +5,7 @@ buildscript {
         about_libraries_version = '10.6.1'
         ksp_version = '1.0.9'
         agp_version = '7.4.2'
-        detekt_version = '1.22.0'
+        detekt_version = '1.23.0'
     }
     repositories {
         maven {
